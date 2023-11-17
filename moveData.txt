@@ -1,0 +1,24 @@
+Name,Type,Category,Power,Accuracy,PP
+Growl,Normal,Status,,100,40
+Tackle,Normal,Physical,35,95,35
+Leech Seed,Grass,Status,,90,10
+Vine Whip,Grass,Special,35,100,25
+Poison Powder,Poison,Status,,75,35
+Razor Leaf,Grass,Special,55,95,25
+Growth,Normal,Status,,,20
+Sleep Powder,Grass,Status,,75,15
+Solar Beam,Grass,Special,120,100,10
+Scratch,Normal,Physical,40,100,35
+Ember,Fire,Special,40,100,25
+Leer,Normal,Status,,100,30
+Rage,Normal,Physical,20,100,20
+Slash,Normal,Physical,70,100,20
+Flamethrower,Fire,Special,95,100,15
+Fire Spin,Fire,Special,15,70,15
+Tail Whip,Normal,Status,,100,30
+Bubble,Water,Special,40,100,30
+Water Gun,Water,Special,40,100,25
+Bite,Normal,Physical,60,100,25
+Withdraw,Water,Status,,,40
+Skull Bash,Normal,Physical,130,100,10
+Hydro Pump,Water,Special,110,80,5

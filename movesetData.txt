@@ -1,0 +1,10 @@
+Name,Level learned,Move Name...
+Bulbasaur,1,Growl,1,Tackle,7,Leech Seed,13,Vine Whip,20,PoisonPowder,27,Razor Leaf,34,Growth,41,Sleep Powder,48,Solar Beam
+Ivysaur,1,Growl,1,Leech Seed,1,Tackle,13,Vine Whip,22,PoisonPowder,30,Razor Leaf,38,Growth,46,Sleep Powder,54,Solar Beam
+Venusaur,1,Growl,1,Leech Seed,1,Tackle,1,Vine Whip,22,PoisonPowder,30,Razor Leaf,43,Growth,55,Sleep Powder,65,Solar Beam
+Charmander,1,Growl,1,Scratch,9,Ember,15,Leer,22,Rage,30,Slash,38,Flamethrower,46,Fire Spin
+Charmeleon,1,Ember,1,Growl,1,Scratch,15,Leer,24,Rage,33,Slash,42,Flamethrower,56,Fire Spin
+Charizard,1,Ember,1,Growl,1,Scratch,1,Leer,24,Rage,36,Slash,46,Flamethrower,55,Fire Spin
+Squirtle,1,Tackle,1,Tail Whip,8,Bubble,15,Water Gun,22,Bite,28,Withdraw,35,Skull Bash,42,Hydro Pump
+Wartortle,1,Bubble,1,Tackle,1,Tail Whip,15,Water Gun,24,Bite,31,Withdraw,39,Skull Bash,47,Hydro Pump
+Blastoise,1,Bubble,1,Tackle,1,Tail Whip,1,Water Gun,24,Bite,31,Withdraw,42,Skull Bash,52,Hydro Pump
