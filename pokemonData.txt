@@ -1,10 +1,152 @@
-Name,Type,Evo,HP,Atk,Def,SpAtk,SpDef,Spe
-Bulbasaur,Grass+Poison,16,45,49,49,65,65,45
-Ivysaur,Grass+Poison,32,60,62,63,80,80,60
-Venusaur,Grass+Poison,0,80,82,83,100,100,80
-Charmander,Fire,16,39,52,43,60,50,65
-Charmeleon,Fire,36,58,64,58,80,65,80
-Charizard,Fire+Flying,0,78,84,78,109,85,100
-Squirtle,Water,16,44,48,65,50,64,43
-Wartortle,Water,36,59,63,80,65,80,58
-Blastoise,Water,0,79,83,100,85,105,78
+Name,Type1,Type2,Evo,HP,Atk,Def,SpAtk,SpDef,Spe
+Bulbasaur,Grass,Poison,16,45,49,49,45,65,65
+Ivysaur,Grass,Poison,32,60,62,63,60,80,80
+Venusaur,Grass,Poison,,80,82,83,80,100,100
+Charmander,Fire,,16,39,52,43,65,50,60
+Charmeleon,Fire,,36,58,64,58,80,65,80
+Charizard,Fire,Flying,,78,84,78,100,85,109
+Squirtle,Water,,16,44,48,65,43,64,50
+Wartortle,Water,,36,59,63,80,58,80,65
+Blastoise,Water,,,79,83,100,78,105,85
+Caterpie,Bug,,7,45,30,35,45,20,20
+Metapod,Bug,,10,50,20,55,30,25,25
+Butterfree,Bug,Flying,,60,45,50,70,80,90
+Weedle,Bug,Poison,7,40,35,30,50,20,20
+Kakuna,Bug,Poison,10,45,25,50,35,25,25
+Beedrill,Bug,Poison,,65,90,40,75,80,45
+Pidgey,Normal,Flying,18,40,45,40,56,35,35
+Pidgeotto,Normal,Flying,36,63,60,55,71,50,50
+Pidgeot,Normal,Flying,,83,80,75,101,70,70
+Rattata,Normal,,20,30,56,35,72,35,25
+Raticate,Normal,,,55,81,60,97,70,50
+Spearow,Normal,Flying,20,40,60,30,70,31,31
+Fearow,Normal,Flying,,65,90,65,100,61,61
+Ekans,Poison,,22,35,60,44,55,54,40
+Arbok,Poison,,,60,95,69,80,79,65
+Pikachu,Electric,,Thunder Stone,35,55,40,90,50,50
+Raichu,Electric,Psychic,,60,90,55,110,80,90
+Sandshrew,Ground,,22,50,75,85,40,30,20
+Sandslash,Ground,,,75,100,110,65,55,45
+NidoranF,Poison,,16,55,47,52,41,40,40
+Nidorina,Poison,,Moon Stone,70,62,67,56,55,55
+Nidoqueen,Poison,Ground,,90,92,87,76,85,75
+NidoranM,Poison,,16,46,57,40,50,40,40
+Nidorino,Poison,,Moon Stone,61,72,57,65,55,55
+Nidoking,Poison,Ground,,81,102,77,85,75,85
+Clefairy,Normal,,Moon Stone,70,45,48,35,65,60
+Clefable,Normal,,,95,70,73,60,90,95
+Vulpix,Fire,,Fire Stone,38,41,40,65,65,50
+Ninetales,Fire,,,73,76,75,100,100,81
+Jigglypuff,Normal,,Moon Stone,115,45,20,20,25,45
+Wigglytuff,Normal,,,140,70,45,45,50,85
+Zubat,Poison,Flying,22,40,45,35,55,40,30
+Golbat,Poison,Flying,,75,80,70,90,75,65
+Oddish,Grass,Poison,21,45,50,55,30,65,75
+Gloom,Grass,Poison,Leaf Stone,60,65,70,40,75,85
+Vileplume,Grass,Poison,,75,80,85,50,90,110
+Paras,Bug,Grass,24,35,70,55,25,55,45
+Parasect,Bug,Grass,,60,95,80,30,80,60
+Venonat,Bug,Poison,31,60,55,50,45,55,40
+Venomoth,Bug,Poison,,70,65,60,90,75,90
+Diglett,Ground,,26,10,55,25,95,45,35
+Dugtrio,Ground,,,35,100,50,120,70,50
+Meowth,Normal,,28,40,45,35,90,40,40
+Persian,Normal,,,65,70,60,115,65,65
+Psyduck,Water,,33,50,52,48,55,50,65
+Golduck,Water,,,80,82,78,85,80,95
+Mankey,Fighting,,28,40,80,35,70,45,35
+Primeape,Fighting,,,65,105,60,95,70,60
+Growlithe,Fire,,Fire Stone,55,70,45,60,50,70
+Arcanine,Fire,,90,110,80,95,80,100
+Poliwag,Water,,25,40,50,40,90,40,40
+Poliwhirl,Water,,Water Stone,65,65,65,90,50,50
+Poliwrath,Water,Fighting,,90,95,95,70,90,70
+Abra,Psychic,,16,25,20,15,90,55,105
+Kadabra,Psychic,,Trade,40,35,30,105,70,120
+Alakazam,Psychic,,,55,50,45,120,95,135
+Machop,Fighting,,28,70,80,50,35,35,35
+Machoke,Fighting,,Trade,80,100,70,45,60,50
+Machamp,Fighting,,,90,130,80,55,85,65
+Bellsprout,Grass,Poison,21,50,75,35,40,30,70
+Weepinbell,Grass,Poison,Leaf Stone65,90,50,55,45,85
+Victreebel,Grass,Poison,,80,105,65,70,70,100
+Tentacool,Water,Poison,30,40,40,35,70,100,50
+Tentacruel,Water,Poison,,80,70,65,100,120,80
+Geodude,Rock,Ground,25,40,80,100,20,30,30
+Graveler,Rock,Ground,Trade,55,95,115,35,45,45
+Golem,Rock,Ground,,80,120,130,45,65,55
+Ponyta,Fire,,40,50,85,55,90,65,65
+Rapidash,Fire,,,65,100,70,105,80,80
+Slowpoke,Psychic,,37,90,65,65,15,40,40
+Slowbro,Poison,Psychic,,95,75,110,30,80,100
+Magnemite,Electric,Steel,30,25,35,70,45,55,95
+Magneton,Electric,Steel,,50,60,95,70,70,120
+Farfetch'd,Normal,,,52,90,55,60,62,58
+Doduo,Normal,Flying,31,35,85,45,75,35,35
+Dodrio,Normal,Flying,,60,110,70,110,60,60
+Seel,Water,,34,65,45,55,45,70,45
+Dewgong,Water,Ice,,90,70,80,70,95,70
+Grimer,Poison,,38,80,80,50,25,50,40
+Muk,Poison,,,105,105,75,50,100,65
+Shellder,Water,,Water Stone,30,65,100,40,25,45
+Cloyster,Water,Ice,,50,95,180,70,45,85
+Gastly,Ghost,Poison,25,30,35,30,80,35,100
+Haunter,Ghost,Poison,Trade,45,50,45,95,55,115
+Gengar,Ghost,Poison,,60,65,60,110,75,130
+Onix,Rock,Ground,,35,45,160,70,45,30
+Drowzee,Psychic,,26,60,48,45,42,90,43
+Hypno,Psychic,,,85,73,70,67,115,73
+Krabby,Water,,28,30,105,90,50,25,25
+Kingler,Water,,,55,130,115,75,50,50
+Voltorb,Electric,,30,40,30,50,100,55,55
+Electrode,Electric,,,60,50,70,150,80,80
+Exeggcute,Grass,Psychic,Leaf Stone,60,40,80,40,45,60
+Exeggutor,Grass,Psychic,,95,95,85,55,75,125
+Cubone,Ground,,28,50,50,95,35,50,40
+Marowak,Ground,,,60,80,110,45,80,50
+Hitmonlee,Fighting,,,50,120,53,87,110,35
+Hitmonchan,Fighting,,,50,105,79,76,110,35
+Lickitung,Normal,,,90,55,75,30,75,60
+Koffing,Poison,,35,40,65,95,35,45,60
+Weezing,Poison,,,65,90,120,60,70,85
+Rhyhorn,Ground,Rock,42,80,85,95,25,30,30
+Rhydon,Ground,Rock,,105,130,120,40,45,45
+Chansey,Normal,,,250,5,5,50,105,35
+Tangela,Grass,,,65,55,115,60,40,100
+Kangaskhan,Normal,,,105,95,80,90,80,40
+Horsea,Water,,32,30,40,70,60,25,70
+Seadra,Water,,,55,65,95,85,45,95
+Goldeen,Water,,33,45,67,60,63,50,35
+Seaking,Water,,,80,92,65,68,80,65
+Staryu,Water,,Water Stone,30,45,55,85,55,70
+Starmie,Water,Psychic,,60,75,85,115,85,100
+Mr. Mime,Psychic,,,40,45,65,90,120,100
+Scyther,Bug,Flying,,70,110,80,105,80,55
+Jynx,Ice,Psychic,,65,50,35,95,95,115
+Electabuzz,Electric,,,65,83,57,105,85,95
+Magmar,Fire,,,65,95,57,93,85,100
+Pinsir,Bug,,,65,125,100,85,70,55
+Tauros,Normal,,,75,100,95,110,70,40
+Magikarp,Water,,20,20,10,55,80,20,15
+Gyarados,Water,Flying,,95,125,79,81,100,60
+Lapras,Water,Ice,,130,85,80,60,95,85
+Ditto,Normal,,,48,48,48,48,48,48
+Eevee,Normal,,Water Stone_Thunder Stone_Fire Stone55,55,50,55,65,45
+Vaporeon,Water,,,130,65,60,65,95,110
+Jolteon,Electric,,,65,65,60,130,95,110
+Flareon,Fire,,,65,130,60,65,110,95
+Porygon,Normal,,,65,60,70,40,75,85
+Omanyte,Rock,Water,40,35,40,100,35,55,90
+Omastar,Rock,Water,,70,60,125,55,70,115
+Kabuto,Rock,Water,40,30,80,90,55,45,55
+Kabutops,Rock,Water,,60,115,105,80,70,65
+Aerodactyl,Rock,Flying,,80,105,65,130,75,60
+Snorlax,Normal,,,160,110,65,30,110,65
+Articuno,Ice,Flying,,90,85,100,85,125,95
+Zapdos,Electric,Flying,,90,90,85,100,90,125
+Moltres,Fire,Flying,,90,100,90,90,85,125
+Dratini,Dragon,,30,41,64,45,50,50,50
+Dragonair,Dragon,,55,61,84,65,70,70,70
+Dragonite,Dragon,Flying,,91,134,95,80,100,100
+Mewtwo,Psychic,,,106,110,90,130,90,154
+Mew,Psychic,,,100,100,100,100,100,100
