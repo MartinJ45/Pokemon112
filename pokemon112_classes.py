@@ -12,15 +12,18 @@ class Pokemon:
         self.updateStats()
         self.currentHP = self.hp
     def __repr__(self):
-        return f"Level {self.level} {self.name}"
+        return (f"Name:{self.name} | Level:{self.level} | Current HP:{self.currentHP} | Moves:{self.moves} | "
+                f"HP:{self.hp} | Atk:{self.attack} | Def:{self.defense} | SpAtk:{self.specialAttack} | "
+                f"SpDef:{self.specialDefense} | Spd:{self.speed}")
     def updateStats(self):
-        self.type = self.statsData[1].split('+')
-        self.hp = Pokemon.updateHP(int(self.statsData[3]), self.level)
-        self.attack = Pokemon.updateStat(int(self.statsData[4]), self.level)
-        self.defense = Pokemon.updateStat(int(self.statsData[5]), self.level)
-        self.specialAttack = Pokemon.updateStat(int(self.statsData[6]), self.level)
-        self.specialDefense = Pokemon.updateStat(int(self.statsData[7]), self.level)
-        self.speed = Pokemon.updateStat(int(self.statsData[8]), self.level)
+        self.type1 = self.statsData[1]
+        self.type2 = self.statsData[2]
+        self.hp = Pokemon.updateHP(int(self.statsData[4]), self.level)
+        self.attack = Pokemon.updateStat(int(self.statsData[5]), self.level)
+        self.defense = Pokemon.updateStat(int(self.statsData[6]), self.level)
+        self.specialAttack = Pokemon.updateStat(int(self.statsData[7]), self.level)
+        self.specialDefense = Pokemon.updateStat(int(self.statsData[8]), self.level)
+        self.speed = Pokemon.updateStat(int(self.statsData[9]), self.level)
     def updateMoves(self):
         for i in range(len(self.movesData)):
             elem = self.movesData[i]
@@ -46,37 +49,45 @@ class Pokemon:
             burn = 1
             screen = 1
             critical = 2 if random.randint(1, 16) == 16 else 1
-            stab = 1.5 if moveType in self.type else 1
-            type1 = Pokemon.getTypeEffectiveness(moveType, otherPokemon.type[0])
-            if len(otherPokemon.type) > 1:
-                type2 = Pokemon.getTypeEffectiveness(moveType, otherPokemon.type[1])
+            stab = 1.5 if moveType in (self.type1, self.type2) else 1
+            type1Eff = Pokemon.getTypeEffectiveness(moveType, otherPokemon.type1)
+            if otherPokemon.type2:
+                type2Eff = Pokemon.getTypeEffectiveness(moveType, otherPokemon.type2)
             else:
-                type2 = 1
+                type2Eff = 1
             rand = random.randint(85,100) / 100
-            damage = ((((2 * level) / 5 + 2) * power * (attack / defense) / 50) * burn * screen + 2) * critical * stab * type1 * type2 * rand
+            damage = ((((2 * level) / 5 + 2) * power * (attack / defense) / 50) * burn * screen + 2) * critical * stab * type1Eff * type2Eff * rand
             damage = int(round(damage))
-            otherPokemon.currentHP -= damage
+
+            if damage > otherPokemon.currentHP:
+                damage = otherPokemon.currentHP
+                otherPokemon.currentHP -= damage
+            else:
+                otherPokemon.currentHP -= damage
+
             return f"{self.name} used {moveName} and did {damage}HP to {otherPokemon.name}"
         return f"{self.name} used {moveName} on {otherPokemon.name}"
     @staticmethod
     def getTypeEffectiveness(type1, type2):
         typeChartIndex = ['Normal', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground',
-                          'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon']
-        typeChart = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, .5, 0, 1], # normal
-                     [1, .5, .5, 2, 1, 2, 1, 1, 1, 1, 1, 2, .5, 1, .5], # fire
-                     [1, 2, .5, .5, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, .5], # water
-                     [1, .5, 2, .5, 1, 1, 1, .5, 2, .5, 1, .5, 2, 1, .5], # grass
-                     [1, 1, 2, .5, .5, 1, 1, 1, 0, 2, 1, 1, 1, 1, .5], # electric
-                     [1, .5, .5, 2, 1, .5, 1, 1, 2, 2, 1, 1, 1, 1, 2], # ice
-                     [2, 1, 1, 1, 1, 2, 1, .5, 1, .5, .5, .5, 2, 0, 1], # fighting
-                     [1, 1, 1, 2, 1, 1, 1, .5, .5, 1, 1, 1, .5, .5, 1], # poison
-                     [1, 2, 1, .5, 2, 1, 1, 2, 1, 0, 1, .5, 2, 1, 1], # ground
-                     [1, 1, 1, 2, .5, 1, 2, 1, 1, 1, 1, 2, .5, 1, 1], # flying
-                     [1, 1, 1, 1, 1, 1, 2, 2, 1, 1, .5, 1, 1, 1, 1], # psychic
-                     [1, .5, 1, 2, 1, 1, .5, .5, 1, .5, 2, 1, 1, .5, 1], # bug
-                     [1, 2, 1, 1, 1, 2, .5, 1, .5, 2, 1, 2, 1, 1, 1], # rock
-                     [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1], # ghost
-                     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2]] # dragon
+                          'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel']
+        typeChart = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, .5, 0, 1, 1, .5], # normal
+                     [1, .5, .5, 2, 1, 2, 1, 1, 1, 1, 1, 2, .5, 1, .5, 1, 2], # fire
+                     [1, 2, .5, .5, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, .5, 1, 1], # water
+                     [1, .5, 2, .5, 1, 1, 1, .5, 2, .5, 1, .5, 2, 1, .5, 1, .5], # grass
+                     [1, 1, 2, .5, .5, 1, 1, 1, 0, 2, 1, 1, 1, 1, .5, 1, 1], # electric
+                     [1, .5, .5, 2, 1, .5, 1, 1, 2, 2, 1, 1, 1, 1, 2, 1, .5], # ice
+                     [2, 1, 1, 1, 1, 2, 1, .5, 1, .5, .5, .5, 2, 0, 1, 2, 2], # fighting
+                     [1, 1, 1, 2, 1, 1, 1, .5, .5, 1, 1, 1, .5, .5, 1, 1, 0], # poison
+                     [1, 2, 1, .5, 2, 1, 1, 2, 1, 0, 1, .5, 2, 1, 1, 1, 2], # ground
+                     [1, 1, 1, 2, .5, 1, 2, 1, 1, 1, 1, 2, .5, 1, 1, 1, .5], # flying
+                     [1, 1, 1, 1, 1, 1, 2, 2, 1, 1, .5, 1, 1, 1, 1, 0, .5], # psychic
+                     [1, .5, 1, 2, 1, 1, .5, .5, 1, .5, 2, 1, 1, .5, 1, 2, .5], # bug
+                     [1, 2, 1, 1, 1, 2, .5, 1, .5, 2, 1, 2, 1, 1, 1, 1, .5], # rock
+                     [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, .5, 1], # ghost
+                     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, .5], # dragon
+                     [1, 1, 1, 1, 1, 1, .5, 1, 1, 1, 2, 1, 1, 2, 1, .5, 1], # dark
+                     [0, .5, .5, 1, .5, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, .5]] # steel
         type1Index = typeChartIndex.index(type1)
         type2Index = typeChartIndex.index(type2)
         return typeChart[type1Index][type2Index]
@@ -105,8 +116,12 @@ class Pokemon:
                     return lineData
 
 class Trainer:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
+        self.x = 0
+        self.y = 0
         self.party = []
+        self.items = []
     def addToParty(self, pokemon):
         if len(self.party) < 6:
             self.party.append(pokemon)
