@@ -4,6 +4,7 @@ class Pokemon:
     def __init__(self, name, level):
         # self.data = dict()
         self.name = name
+        self.nickName = name.upper()
         self.level = level
         self.experience = level ** 3
         self.moves = []
