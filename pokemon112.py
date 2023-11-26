@@ -80,7 +80,7 @@ def onAppStart(app):
     # overworld - where the player can walk around and interact with trainers and items
     # battle - where the player battles either wild pokemon or other trainers
     # buildings - where the player can walk around and interact with the world, but in a building (different map)
-    app.scene = 0
+    app.scene = 1
 
     app.cellWidth = app.cellHeight = 32
     app.mapGrid = loadMapGrid()
@@ -108,10 +108,13 @@ def onAppStart(app):
     # app.oppPokemon will keep track of the current pokemon that the opponent would have out in a battle
     app.oppPokemon = app.opponent.party[0]
 
-    loadBattleGraphics()
+    loadBattleGraphics(app)
     # initializes variables used during a battle
-    app.battleBoxMsg = f''
-    app.action = 0
+    app.battleBoxMsg = []
+    app.currentAction = ''
+    app.actionIndex = [0, 0]
+    app.actionCursorPos = [[(258, 248), (370, 248)],
+                           [(258, 280), (370, 280)]]
 
     # sprite variables that are currently unused (graphics will be added on later)
     backgroundColor = (0, 255, 255)  # cyan
@@ -129,8 +132,75 @@ def loadMapGrid():
                 mapGrid[i].append(int(col))
         return mapGrid
 
-def loadBattleGraphics():
-    app.battleBackgrounds = []
+def loadBattleGraphics(app):
+    grassBackground = openImage('images/battleGrassBackground.png')
+    app.battleBackgrounds = [grassBackground]
+    battleBoxBackground = openImage('images/battleBoxBackground.png')
+    app.battleSprites = [battleBoxBackground]
+
+    battleSceneSpriteSheet = openImage('images/battleSceneSprites.png')
+    oppHealthBox = battleSceneSpriteSheet.crop((3, 3, 3 + 100, 3 + 29))       # (left, top, left+width, top+height)
+    playerHealthBox = battleSceneSpriteSheet.crop((3, 44, 3 + 104, 44 + 37))
+
+    greenHealth = battleSceneSpriteSheet.crop((117, 9, 117 + 9, 9 + 3))
+    yellowHealth = battleSceneSpriteSheet.crop((117, 13, 117 + 9, 13 + 3))
+    redHealth = battleSceneSpriteSheet.crop((117, 17, 117 + 9, 17 + 3))
+    noHealth = battleSceneSpriteSheet.crop((117, 21, 117 + 9, 21 + 3))
+    expBar = battleSceneSpriteSheet.crop((129, 9, 129 + 7, 9 + 2))
+    noExpBar = battleSceneSpriteSheet.crop((129, 12, 129 + 7, 12 + 2))
+
+    actionBox = battleSceneSpriteSheet.crop((146, 4, 120 + 146, 48 + 4))
+    moveBox = battleSceneSpriteSheet.crop((297, 4, 240 + 297, 48 + 4))
+    battleBoxBackground = battleSceneSpriteSheet.crop((297, 56, 240 + 297, 48 + 56))
+    blackCursor = battleSceneSpriteSheet.crop((269, 4, 6 + 269, 10 + 4))
+    redCursor = battleSceneSpriteSheet.crop((544, 59, 10 + 544, 6 + 59))
+
+    app.battleSceneSprites = {'oppHealthBox': oppHealthBox, 'playerHealthBox': playerHealthBox,
+                              'greenHealth': greenHealth, 'yellowHealth': yellowHealth, 'redHealth': redHealth,
+                              'noHealth': noHealth, 'expBar': expBar, 'noExpBar': noExpBar,
+                              'actionBox': actionBox, 'moveBox': moveBox, 'battleBoxBackground': battleBoxBackground,
+                              'blackCursor': blackCursor, 'redCursor': redCursor}
+
+    app.alphaNum = loadAlphaNum(battleSceneSpriteSheet)
+
+def loadAlphaNum(battleSceneSpriteSheet):
+    startLeft = 171
+    startTop = 124
+    alphaNum = dict()
+    keys = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+            'V', 'W', 'X', 'Y', 'Z', '.', ',', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+            'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8',
+            '9', ' ', '!', '?', '♂', '♀', '/', '-', '..', '\"', '\"', '\'', '\'']
+    for char in keys:
+        character = battleSceneSpriteSheet.crop((startLeft, startTop, startLeft + 6, startTop + 8))
+        alphaNum[char] = character
+        startLeft += 7
+        if char == 'i':
+            startLeft -= 2
+        if char in ('I', 'T', 'p', '!'):
+            startLeft -= 1
+        if char in (',', 'z', ' '):
+            startTop += 15
+            startLeft = 171
+
+    return alphaNum
+
+def drawAlphaNum(app, left, top, string, size=(10, 16), color1=(64, 64, 64), color2=(216, 208, 176)):
+    for char in string:
+        character = app.alphaNum[char]
+
+        character.convert('RGB')
+        colorCharacter = Image.new(mode='RGBA', size=(6, 8))
+        for x in range(6):
+            for y in range(8):
+                r,g,b,al = character.getpixel((x, y))
+                if r == g == b == 64:
+                    colorCharacter.putpixel((x, y), color1)
+                elif r == 216 and g == 208 and b == 176:
+                    colorCharacter.putpixel((x, y), color2)
+
+        drawImage(CMUImage(colorCharacter), left, top, width=size[0], height=size[1])
+        left += 8
 
 def setupOverworld(app):
     rows, cols = len(app.mapGrid), len(app.mapGrid[0])
@@ -151,11 +221,13 @@ def setupOverworld(app):
 
 def setupPokemonBattle(app, wild=True):
     app.scene = 1
-    app.action = 0
+    app.currentAction = ''
+    app.actionIndex = [0, 0]
     if wild:
         app.oppPokemon = Pokemon('Pidgey', 2)
         app.oppPokemon.updateStats()
         app.oppPokemon.updateMoves()
+    app.battleBoxMsg = [f'What will', f'{app.curPokemon.nickName} do?']
 
 def updateScene(app):
     if app.scene == 0:
@@ -171,17 +243,7 @@ def updateScene(app):
             app.playerPos = [app.cameraPos[0] + 5, app.cameraPos[1] + 7]
             checkForBattle(app)
     if app.scene == 1:  # if the player is in a battle
-        if app.action == 0:     # no option pressed
-            app.battleBoxMsg = f'What will {app.curPokemon.name} do?'
-        elif app.action == 1:   # fight pressed
-            app.battleBoxMsg = f'{app.curPokemon.moves}'
-        elif app.action == 2:   # bag pressed
-            app.battleBoxMsg = f'Bag not implemented'
-        elif app.action == 3:   # pokemon pressed
-            app.battleBoxMsg = f'Pokemon not implemented'
-        elif app.action == 4:   # run pressed
-            app.battleBoxMsg = f'Ran away'
-            app.scene = 0
+        pass
 
 def checkForBattle(app):
     if app.mapGrid[app.playerPos[0]][app.playerPos[1]] == 3:
@@ -197,9 +259,13 @@ def redrawAll(app):
 
         drawImage(CMUImage(app.image), app.width//2, app.height//2, align='center')
     elif app.scene == 1:    # if the player is in a battle
+        drawBattleBackground(app)
         drawPokemonHealthBox(app)
-        drawBattleBox(app)
-        drawActionBox(app)
+        if app.currentAction == 'fight':
+            drawMoveBox(app)
+        else:
+            drawBattleBoxMsg(app)
+            drawActionBox(app)
 
 def drawOverworld(app):
     rows, cols = 13, 17
@@ -211,32 +277,70 @@ def drawOverworld(app):
         if col != 0 and col % cols == 0:
             col = 0
             row += 1
-        drawImage(CMUImage(app.overworld[startRow+row][startCol+col]), col*32-app.cellD[1], row*32-app.cellD[0])
+        drawImage(CMUImage(app.overworld[startRow+row][startCol+col]), col*32-app.cellD[1], row*32-app.cellD[0]-16)
         col += 1
 
     # for row in range(rows):
     #     for col in range(cols):
     #         drawImage(CMUImage(app.overworld[startRow+row][startCol+col]), col*32-app.cellD[1], row*32-app.cellD[0])
 
+def drawBattleBackground(app):
+    drawImage(CMUImage(app.battleBackgrounds[0]), 0, 0, width=480, height=224)
+    drawImage(CMUImage(app.battleSceneSprites['battleBoxBackground']), 0, 224, width=480, height=96)
+
 def drawPokemonHealthBox(app):
     # temporary labels for opponent and player pokemon
+    drawImage(CMUImage(app.battleSceneSprites['oppHealthBox']), 28, 34, width=200, height=58)
+    left = 107
+    top = 68
+    drawHealthBar(app, left, top, app.oppPokemon.currentHP, app.oppPokemon.hp)
+    left = 42
+    top = 44
+    drawAlphaNum(app, left, top, app.oppPokemon.nickName)
+
     drawLabel(f'{app.oppPokemon.name} Lvl {app.oppPokemon.level} '
               f'HP: {app.oppPokemon.currentHP} / {app.oppPokemon.hp}',
               app.width // 4, app.height // 8)
+
+    drawImage(CMUImage(app.battleSceneSprites['playerHealthBox']), 254, 150, width=208, height=74)
+    left = 350
+    top = 184
+    drawHealthBar(app, left, top, app.curPokemon.currentHP, app.curPokemon.hp)
+    left = 286
+    top = 160
+    drawAlphaNum(app, left, top, app.curPokemon.nickName)
     drawLabel(f'{app.curPokemon.name} Lvl {app.curPokemon.level} '
               f'HP: {app.curPokemon.currentHP} / {app.curPokemon.hp}',
               app.width - app.width // 4, app.height - app.height // 3)
 
-def drawBattleBox(app):
-    # temporary graphics for battle box
-    drawRect(0, app.height - app.height // 4, app.width // 2, app.height // 4, fill=None, border='black')
-    drawLabel(app.battleBoxMsg, app.width // 6, app.height - app.height // 6)
+def drawHealthBar(app, left, top, currentHP, hp):
+    healthPercent = currentHP / hp
+    if healthPercent > .5:
+        healthColor = 'greenHealth'
+    elif .2 < healthPercent <= .5:
+        healthColor = 'yellowHealth'
+    else:
+        healthColor = 'redHealth'
+    healthBarWidth = 48
+    healthWidth = int(healthBarWidth * healthPercent)
+
+    if healthWidth > 0:
+        drawImage(CMUImage(app.battleSceneSprites[healthColor]), left, top, width=healthWidth*2, height=6)
+
+def drawBattleBoxMsg(app):
+    startLeft = 22
+    startTop = 252
+    for line in app.battleBoxMsg:
+        drawAlphaNum(app, startLeft, startTop, line, (12, 18), (248, 248, 248), (104, 88, 112))
+        startTop += 34
+
+def drawMoveBox(app):
+    drawImage(CMUImage(app.battleSceneSprites['moveBox']), 0, 224, width=480, height=96)
 
 def drawActionBox(app):
-    # temporary graphics for actionBox
-    drawRect(app.width // 2, app.height - app.height // 4, app.width // 2, app.height // 4, fill=None, border='black')
-    drawLabel(f'1:Fight 2:bag 3:Pokemon 4:Run Action:{app.action}', app.width - app.width // 4,
-              app.height - app.height // 6)
+    drawImage(CMUImage(app.battleSceneSprites['actionBox']), 242, 226, width=240, height=96)
+    cursorX, cursorY = app.actionCursorPos[app.actionIndex[1]][app.actionIndex[0]]
+    drawImage(CMUImage(app.battleSceneSprites['blackCursor']), cursorX, cursorY, width=12, height=20)
 
 def playerCanMove(app, move):
     playerPos = [app.cameraPos[0] + 5, app.cameraPos[1] + 7]
@@ -258,23 +362,31 @@ def onKeyHold(app, keys):
 
 def onKeyPress(app, key):
     if app.scene == 1:
-        if key.isdigit() and 0 <= int(key) <= 4:
-            app.action = int(key)
-        if app.action == 1 and key == 'a':
-            app.curPokemon.attackPokemon(app.oppPokemon, app.curPokemon.moves[0])
-            if app.oppPokemon.currentHP == 0:
+        if app.currentAction == '':
+            if key == 'left' or key == 'right':
+                app.actionIndex[0] = 1 if app.actionIndex[0] == 0 else 0
+            if key == 'up' or key == 'down':
+                app.actionIndex[1] = 1 if app.actionIndex[1] == 0 else 0
+        if key == 'x':
+            if app.actionIndex == [0, 0]:
+                app.currentAction = 'fight'
+                app.curPokemon.attackPokemon(app.oppPokemon, app.curPokemon.moves[0])
+                if app.oppPokemon.currentHP == 0:
+                    app.scene = 0
+                    return
+                app.oppPokemon.attackPokemon(app.curPokemon, app.oppPokemon.moves[0])
+                if app.curPokemon.currentHP == 0:
+                    app.scene = 0
+                    app.stop()
+                    return
+            if app.actionIndex == [1, 1]:
+                app.currentAction = 'run'
                 app.scene = 0
-                return
-            app.oppPokemon.attackPokemon(app.curPokemon, app.oppPokemon.moves[0])
-            if app.curPokemon.currentHP == 0:
-                app.scene = 0
-                app.stop()
-                return
 
 def onStep(app):
     app.counter += 1
     updateScene(app)
 
 def main():
-    runApp(480, 352)
+    runApp(480, 320)
 main()
