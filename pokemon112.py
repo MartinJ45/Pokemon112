@@ -80,7 +80,7 @@ def onAppStart(app):
     # overworld - where the player can walk around and interact with trainers and items
     # battle - where the player battles either wild pokemon or other trainers
     # buildings - where the player can walk around and interact with the world, but in a building (different map)
-    app.scene = 1
+    app.scene = 0
 
     app.cellWidth = app.cellHeight = 32
     app.mapGrid = loadMapGrid()
@@ -115,6 +115,9 @@ def onAppStart(app):
     app.actionIndex = [0, 0]
     app.actionCursorPos = [[(258, 248), (370, 248)],
                            [(258, 280), (370, 280)]]
+    app.moveIndex = [0, 0]
+    app.moveCursorPos = [[(22, 254), (167, 254)],
+                         [(22, 284), (167, 284)]]
 
     # sprite variables that are currently unused (graphics will be added on later)
     backgroundColor = (0, 255, 255)  # cyan
@@ -297,10 +300,9 @@ def drawPokemonHealthBox(app):
     left = 42
     top = 44
     drawAlphaNum(app, left, top, app.oppPokemon.nickName)
-
-    drawLabel(f'{app.oppPokemon.name} Lvl {app.oppPokemon.level} '
-              f'HP: {app.oppPokemon.currentHP} / {app.oppPokemon.hp}',
-              app.width // 4, app.height // 8)
+    left = 190
+    top = 42
+    drawAlphaNum(app, left, top, str(app.oppPokemon.level))
 
     drawImage(CMUImage(app.battleSceneSprites['playerHealthBox']), 254, 150, width=208, height=74)
     left = 350
@@ -309,9 +311,12 @@ def drawPokemonHealthBox(app):
     left = 286
     top = 160
     drawAlphaNum(app, left, top, app.curPokemon.nickName)
-    drawLabel(f'{app.curPokemon.name} Lvl {app.curPokemon.level} '
-              f'HP: {app.curPokemon.currentHP} / {app.curPokemon.hp}',
-              app.width - app.width // 4, app.height - app.height // 3)
+    left = 434
+    top = 158
+    drawAlphaNum(app, left, top, str(app.curPokemon.level))
+    left = 384
+    top = 196
+    drawAlphaNum(app, left, top, f'{app.curPokemon.currentHP}/ {app.curPokemon.hp}')
 
 def drawHealthBar(app, left, top, currentHP, hp):
     healthPercent = currentHP / hp
@@ -331,11 +336,39 @@ def drawBattleBoxMsg(app):
     startLeft = 22
     startTop = 252
     for line in app.battleBoxMsg:
-        drawAlphaNum(app, startLeft, startTop, line, (12, 18), (248, 248, 248), (104, 88, 112))
+        drawAlphaNum(app, startLeft, startTop, line, size=(12, 18), color1=(248, 248, 248), color2=(104, 88, 112))
         startTop += 34
 
 def drawMoveBox(app):
     drawImage(CMUImage(app.battleSceneSprites['moveBox']), 0, 224, width=480, height=96)
+    startLeft = 42
+    startTop = 254
+    for i in range(4):
+        if i >= len(app.curPokemon.moves):
+            move = '--'
+        else:
+            move = app.curPokemon.moves[i]
+        drawAlphaNum(app, startLeft, startTop, move, color1=(72, 72, 72), color2=(208, 208, 200))
+        startLeft += 145
+        if i == 1:
+            startTop += 30
+            startLeft = 42
+    cursorX, cursorY = app.moveCursorPos[app.moveIndex[1]][app.moveIndex[0]]
+    drawImage(CMUImage(app.battleSceneSprites['blackCursor']), cursorX, cursorY, width=12, height=20)
+
+    moveI = app.moveIndex[0] * 2 ** 0 + app.moveIndex[1] * 2 ** 1
+    if moveI >= len(app.curPokemon.moves):
+        currentPP = '--'
+        maxPP = '--'
+        type = '--'
+    else:
+        currentPP = app.curPokemon.currentMovePP[moveI]
+        maxPP = app.curPokemon.maxMovePP[moveI]
+        type = app.curPokemon.moveType[moveI].upper()
+
+    drawAlphaNum(app, 410, 246, str(currentPP), color1=(72, 72, 72), color2=(208, 208, 200))
+    drawAlphaNum(app, 440, 246, str(maxPP), color1=(72, 72, 72), color2=(208, 208, 200))
+    drawAlphaNum(app, 410, 286, type, color1=(72, 72, 72), color2=(208, 208, 200))
 
 def drawActionBox(app):
     drawImage(CMUImage(app.battleSceneSprites['actionBox']), 242, 226, width=240, height=96)
@@ -367,10 +400,26 @@ def onKeyPress(app, key):
                 app.actionIndex[0] = 1 if app.actionIndex[0] == 0 else 0
             if key == 'up' or key == 'down':
                 app.actionIndex[1] = 1 if app.actionIndex[1] == 0 else 0
-        if key == 'x':
-            if app.actionIndex == [0, 0]:
-                app.currentAction = 'fight'
-                app.curPokemon.attackPokemon(app.oppPokemon, app.curPokemon.moves[0])
+            if key == 'x':
+                if app.actionIndex == [0, 0]:
+                    app.currentAction = 'fight'
+                if app.actionIndex == [1, 1]:
+                    app.currentAction = 'run'
+                    app.scene = 0
+        elif app.currentAction == 'fight':
+            if key == 'left' or key == 'right':
+                app.moveIndex[0] = 1 if app.moveIndex[0] == 0 else 0
+            if key == 'up' or key == 'down':
+                app.moveIndex[1] = 1 if app.moveIndex[1] == 0 else 0
+            if key == 'x':
+                moveI = app.moveIndex[0]*2**0 + app.moveIndex[1]*2**1
+                if moveI >= len(app.curPokemon.moves):
+                    return
+
+                move = app.curPokemon.moves[moveI]
+                app.curPokemon.attackPokemon(app.oppPokemon, move)
+                app.currentAction = ''
+
                 if app.oppPokemon.currentHP == 0:
                     app.scene = 0
                     return
@@ -379,9 +428,6 @@ def onKeyPress(app, key):
                     app.scene = 0
                     app.stop()
                     return
-            if app.actionIndex == [1, 1]:
-                app.currentAction = 'run'
-                app.scene = 0
 
 def onStep(app):
     app.counter += 1
