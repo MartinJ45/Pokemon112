@@ -8,6 +8,9 @@ class Pokemon:
         self.level = level
         self.experience = level ** 3
         self.moves = []
+        self.currentMovePP = []
+        self.moveType = []
+        self.maxMovePP = []
         self.statsData = Pokemon.readData('pokemonData.txt', self.name)
         self.movesData = Pokemon.readData('movesetData.txt', self.name)
         self.updateStats()
@@ -29,10 +32,20 @@ class Pokemon:
         for i in range(len(self.movesData)):
             elem = self.movesData[i]
             if elem.isdigit() and int(elem) <= self.level:
+                moveData = Pokemon.readData('moveData.txt', self.movesData[i+1])
                 self.moves.append(self.movesData[i+1])
+                self.currentMovePP.append(int(moveData[-1]))
+                self.moveType.append(moveData[1])
+                self.maxMovePP.append(int(moveData[-1]))
                 if len(self.moves) > 4:
                     self.moves.pop(0)
+                    self.currentMovePP.pop(0)
+                    self.moveType.pop(0)
+                    self.maxMovePP.pop(0)
     def attackPokemon(self, otherPokemon, move):
+        moveIndex = self.moves.index(move)
+        self.currentMovePP[moveIndex] -= 1
+
         moveData = Pokemon.readData('moveData.txt', move)
         moveName = moveData[0]
         moveType = moveData[1]
