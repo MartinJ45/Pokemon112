@@ -23,8 +23,8 @@ Spearow,1,Peck,1,Growl,7,Leer,13,Fury Attack,19,Pursuit,25,Aerial Ace,31,Mirror 
 Fearow,1,Peck,1,Growl,1,Leer,1,Fury Attack,7,Leer,13,Fury Attack,26,Pursuit,32,Mirror Move,40,Drill Peck,47,Agility
 Ekans,1,Wrap,1,Leer,8,Poison Sting,13,Bite,20,Glare,25,Screech,32,Acid,37,Stockpile,37,Swallow,37,Spit Up,44,Haze
 Arbok,1,Wrap,1,Leer,1,Poison Sting,1,Bite,8,Poison Sting,13,Bite,20,Glare,28,Screech,38,Acid,46,Stockpile,46,Swallow,46,Spit Up,56,Haze
-Pikachu,1,Thundershock,1,Growl,6,Tail Whip,8,Thunder Wave,11,Quick Attack,15,Double Team,20,Slam,26,Thunderbolt,33,Agility,41,Thunder,50,Light Screen
-Raichu,1,Thundershock,1,Tail Whip,1,Quick Attack,1,Thunderbolt
+Pikachu,1,Thunder Shock,1,Growl,6,Tail Whip,8,Thunder Wave,11,Quick Attack,15,Double Team,20,Slam,26,Thunderbolt,33,Agility,41,Thunder,50,Light Screen
+Raichu,1,Thunder Shock,1,Tail Whip,1,Quick Attack,1,Thunderbolt
 Sandshrew,1,Scratch,6,Defense Curl,11,Sand-attack,17,Poison Sting,23,Slash,30,Swift,37,Fury Swipes,45,Sand Tomb,53,Sandstorm
 Sandslash,1,Scratch,1,Defense Curl,1,Sand-attack,6,Defense Curl,11,Sand-attack,17,Poison Sting,24,Slash,33,Swift,42,Fury Swipes,52,Sand Tomb,62,Sandstorm
 Nidoran,1,Growl,1,Scratch,8,Tail Whip,12,Double Kick,17,Poison Sting,20,Bite,23,Helping Hand,30,Fury Swipes,38,Flatter,47,Crunch
@@ -79,8 +79,8 @@ Ponyta,1,Tackle,5,Growl,9,Tail Whip,14,Ember,19,Stomp,25,Fire Spin,31,Take Down,
 Rapidash,1,Tackle,1,Growl,1,Tail Whip,1,Ember,5,Growl,9,Tail Whip,14,Ember,19,Stomp,25,Fire Spin,31,Take Down,38,Agility,40,Fury Attack,50,Bounce,63,Fire Blast
 Slowpoke,1,Curse,1,Yawn,1,Tackle,6,Growl,15,Water Gun,20,Confusion,29,Disable,34,Headbutt,43,Amnesia,48,Psychic
 Slowbro,1,Curse,1,Yawn,1,Tackle,1,Growl,6,Growl,15,Water Gun,20,Confusion,29,Disable,34,Headbutt,37,Withdraw,46,Amnesia,54,Psychic
-Magnemite,1,Metal Sound,1,Tackle,6,Thundershock,11,Supersonic,16,Sonicboom,21,Thunder Wave,26,Spark,32,Lock-on,38,Swift,44,Screech,50,Zap Cannon
-Magneton,1,Metal Sound,1,Tackle,1,Thundershock,1,Supersonic,6,Thundershock,11,Supersonic,16,Sonicboom,21,Thunder Wave,26,Spark,35,Lock-on,44,Tri Attack,53,Screech,62,Zap Cannon
+Magnemite,1,Metal Sound,1,Tackle,6,Thunder Shock,11,Supersonic,16,Sonicboom,21,Thunder Wave,26,Spark,32,Lock-on,38,Swift,44,Screech,50,Zap Cannon
+Magneton,1,Metal Sound,1,Tackle,1,Thunder Shock,1,Supersonic,6,Thunder Shock,11,Supersonic,16,Sonicboom,21,Thunder Wave,26,Spark,35,Lock-on,44,Tri Attack,53,Screech,62,Zap Cannon
 Farfetch'd,1,Peck,6,Sand-attack,11,Leer,16,Fury Attack,21,Knock Off,26,Fury Cutter,31,Swords Dance,36,Agility,41,Slash,46,False Swipe
 Doduo,1,Peck,1,Growl,9,Pursuit,13,Fury Attack,21,Tri Attack,25,Rage,33,Uproar,37,Drill Peck,45,Agility
 Dodrio,1,Peck,1,Growl,1,Pursuit,1,Fury Attack,9,Pursuit,13,Fury Attack,21,Tri Attack,25,Rage,38,Uproar,47,Drill Peck,60,Agility
@@ -133,7 +133,7 @@ Lapras,1,Water Gun,1,Growl,1,Sing,7,Mist,13,Body Slam,19,Confuse Ray,25,Perish S
 Ditto,1,Transform
 Eevee,1,Tackle,1,Tail Whip,1,Helping Hand,8,Sand-attack,16,Growl,23,Quick Attack,30,Bite,36,Baton Pass,42,Take Down
 Vaporeon,1,Tackle,1,Tail Whip,1,Helping Hand,8,Sand-attack,16,Water Gun,23,Quick Attack,30,Bite,36,Aurora Beam,42,Haze,47,Acid Armor,52,Hydro Pump
-Jolteon,1,Tackle,1,Tail Whip,1,Helping Hand,8,Sand-attack,16,Thundershock,23,Quick Attack,30,Double Kick,36,Pin Missile,42,Thunder Wave,47,Agility,52,Thunder
+Jolteon,1,Tackle,1,Tail Whip,1,Helping Hand,8,Sand-attack,16,Thunder Shock,23,Quick Attack,30,Double Kick,36,Pin Missile,42,Thunder Wave,47,Agility,52,Thunder
 Flareon,1,Tackle,1,Tail Whip,1,Helping Hand,8,Sand-attack,16,Ember,23,Quick Attack,30,Bite,36,Fire Spin,42,Smog,47,Leer,52,Flamethrower
 Porygon,1,Conversion 2,1,Tackle,1,Conversion,9,Agility,12,Psybeam,20,Recover,24,Sharpen,32,Lock-on,36,Tri Attack,44,Recycle,48,Zap Cannon
 Omanyte,1,Constrict,1,Withdraw,13,Bite,19,Water Gun,25,Mud Shot,31,Leer,37,Protect,43,Tickle,49,Ancientpower,55,Hydro Pump
@@ -143,7 +143,7 @@ Kabutops,1,Scratch,1,Harden,1,Absorb,13,Absorb,19,Leer,25,Mud Shot,31,Sand-attac
 Aerodactyl,1,Wing Attack,8,Agility,15,Bite,22,Supersonic,29,Ancientpower,36,Scary Face,43,Take Down,50,Hyper Beam
 Snorlax,1,Tackle,6,Amnesia,10,Defense Curl,15,Belly Drum,19,Headbutt,24,Yawn,28,Rest,28,Snore,33,Body Slam,37,Block,42,Covet,46,Rollout,51,Hyper Beam
 Articuno,1,Gust,1,Powder Snow,13,Mist,25,Agility,37,Mind Reader,49,Ice Beam,61,Reflect,73,Blizzard,85,Sheer Cold
-Zapdos,1,Peck,1,Thundershock,13,Thunder Wave,25,Agility,37,Detect,49,Drill Peck,61,Charge,73,Light Screen,85,Thunder
+Zapdos,1,Peck,1,Thunder Shock,13,Thunder Wave,25,Agility,37,Detect,49,Drill Peck,61,Charge,73,Light Screen,85,Thunder
 Moltres,1,Wing Attack,1,Ember,13,Fire Spin,25,Agility,37,Endure,49,Flamethrower,61,Safeguard,73,Heat Wave,85,Sky Attack
 Dratini,1,Wrap,1,Leer,8,Thunder Wave,15,Twister,22,Dragon Rage,29,Slam,36,Agility,43,Safeguard,50,Outrage,57,Hyper Beam
 Dragonair,1,Wrap,1,Leer,1,Thunder Wave,1,Twister,8,Thunder Wave,15,Twister,22,Dragon Rage,29,Slam,38,Agility,47,Safeguard,56,Outrage,65,Hyper Beam
