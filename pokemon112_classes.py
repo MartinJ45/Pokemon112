@@ -81,6 +81,19 @@ class Pokemon:
 
             return f"{self.name} used {moveName} and did {damage}HP to {otherPokemon.name}"
         return f"{self.name} used {moveName} on {otherPokemon.name}"
+    def gainExperience(self, defeatedPokemon):
+        baseStatTotal = (defeatedPokemon.hp + defeatedPokemon.attack + defeatedPokemon.specialAttack +
+                         defeatedPokemon.defense + defeatedPokemon.specialDefense + defeatedPokemon.speed)
+        expGain = baseStatTotal * defeatedPokemon.level
+        self.experience += expGain
+        if self.experience > (self.level + 1) ** 3:
+            self.levelUp()
+    def levelUp(self):
+        self.level += 1
+        missingHP = self.hp - self.currentHP
+        self.updateStats()
+        # self.updateMoves()
+        self.currentHP = self.hp - missingHP
     @staticmethod
     def getTypeEffectiveness(type1, type2):
         typeChartIndex = ['Normal', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground',
@@ -130,12 +143,33 @@ class Pokemon:
                     return lineData
 
 class Trainer:
-    def __init__(self, name):
+    def __init__(self, name, spriteSheet, x=0, y=0):
         self.name = name
-        self.x = 0
-        self.y = 0
+        self.spriteSheet = spriteSheet
+        self.spriteCount = 0
+        self.frontSprites = [spriteSheet[0], spriteSheet[3], spriteSheet[0]]
+        self.backSprites = [spriteSheet[1], spriteSheet[4], spriteSheet[1]]
+        self.sideSprites = [spriteSheet[2], spriteSheet[5], spriteSheet[2]]
+        self.facing = 'front'
+        self.isMoving = False
+        self.x = x
+        self.y = y
         self.party = []
-        self.items = []
+        self.items = dict()
+        self.defeated = False
+    def getSprite(self):
+        if self.isMoving:
+            self.spriteCount += 1
+            if self.spriteCount == 3:
+                self.spriteCount = 0
+        else:
+            self.spriteCount = 0
+        if self.facing == 'front':
+            return self.frontSprites[self.spriteCount]
+        if self.facing == 'back':
+            return self.backSprites[self.spriteCount]
+        if self.facing in ('left', 'right'):
+            return self.sideSprites[self.spriteCount]
     def addToParty(self, pokemon):
         if len(self.party) < 6:
             self.party.append(pokemon)
@@ -146,3 +180,13 @@ class Trainer:
             self.party.remove(pokemon)
             return f'Removed {pokemon} from party!'
         return None
+    def addItem(self, item):
+        self.items[item] = self.items.get(item, 0) + 1
+    def useItem(self, item, pokemon):
+        if item == 'Potion':
+            pokemon.currentHP += 20
+            if pokemon.currentHP > pokemon.hp:
+                pokemon.currentHP = pokemon.hp
+        self.items[item] -= 1
+        if self.items[item] == 0:
+            self.items.pop(item)
