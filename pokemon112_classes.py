@@ -8,8 +8,11 @@ class Pokemon:
         self.level = level
         self.experience = level ** 3
         self.moves = []
+        self.moveTypes = []
+        self.moveCategories = []
+        self.movePowers = []
+        self.moveAccuracies = []
         self.currentMovePP = []
-        self.moveType = []
         self.maxMovePP = []
         self.statsData = Pokemon.readData('pokemonData.txt', self.name)
         self.movesData = Pokemon.readData('movesetData.txt', self.name)
@@ -19,6 +22,14 @@ class Pokemon:
         return (f"Name:{self.name} | Level:{self.level} | Current HP:{self.currentHP} | Moves:{self.moves} | "
                 f"HP:{self.hp} | Atk:{self.attack} | Def:{self.defense} | SpAtk:{self.specialAttack} | "
                 f"SpDef:{self.specialDefense} | Spd:{self.speed}")
+    def __eq__(self, other):
+        return str(self) == str(other)
+    def clone(self):
+        clonePokemon = Pokemon(self.name, self.level)
+        clonePokemon.updateStats()
+        clonePokemon.updateMoves()
+        clonePokemon.currentHP = self.currentHP
+        return clonePokemon
     def updateStats(self):
         self.type1 = self.statsData[1]
         self.type2 = self.statsData[2]
@@ -33,14 +44,20 @@ class Pokemon:
             elem = self.movesData[i]
             if elem.isdigit() and int(elem) <= self.level:
                 moveData = Pokemon.readData('moveData.txt', self.movesData[i+1])
-                self.moves.append(self.movesData[i+1])
-                self.currentMovePP.append(int(moveData[-1]))
-                self.moveType.append(moveData[1])
-                self.maxMovePP.append(int(moveData[-1]))
+                self.moves.append(moveData[0])
+                self.moveTypes.append(moveData[1])
+                self.moveCategories.append(moveData[2])
+                self.movePowers.append(moveData[3])
+                self.moveAccuracies.append(int(moveData[4]))
+                self.currentMovePP.append(int(moveData[5]))
+                self.maxMovePP.append(int(moveData[5]))
                 if len(self.moves) > 4:
                     self.moves.pop(0)
+                    self.moveTypes.pop(0)
+                    self.moveCategories.pop(0)
+                    self.movePowers.pop(0)
+                    self.moveAccuracies.pop(0)
                     self.currentMovePP.pop(0)
-                    self.moveType.pop(0)
                     self.maxMovePP.pop(0)
     def attackPokemon(self, otherPokemon, move):
         moveIndex = self.moves.index(move)
@@ -79,8 +96,10 @@ class Pokemon:
             else:
                 otherPokemon.currentHP -= damage
 
-            return f"{self.name} used {moveName} and did {damage}HP to {otherPokemon.name}"
-        return f"{self.name} used {moveName} on {otherPokemon.name}"
+            return damage
+            # return f"{self.name} used {moveName} and did {damage}HP to {otherPokemon.name}"
+        return 0
+        # return f"{self.name} used {moveName} on {otherPokemon.name}"
     def gainExperience(self, defeatedPokemon):
         baseStatTotal = (defeatedPokemon.hp + defeatedPokemon.attack + defeatedPokemon.specialAttack +
                          defeatedPokemon.defense + defeatedPokemon.specialDefense + defeatedPokemon.speed)
@@ -190,3 +209,95 @@ class Trainer:
         self.items[item] -= 1
         if self.items[item] == 0:
             self.items.pop(item)
+    def determineMove(self, curPokemon, opponent, oppPokemon):
+        state = self.getPossibleMoves(curPokemon.clone(), oppPokemon.clone())
+        self.gameAI(state, 5, True,
+                    curPokemon.clone(), oppPokemon.clone(), 0)
+    def gameAI(self, state, depth, maximizing, curPokemon, oppPokemon, moveI):
+        print('depth', depth)
+        if depth == 0: # base case
+            # return score of the state
+            return state[1][moveI], moveI
+        if maximizing:
+            bestMoveI = 0
+            bestScore = state[1][bestMoveI] * -1
+            print(bestScore)
+            for i in range(len(state[0])):
+                move = state[0][i]
+                curPokemonBefore = curPokemon.clone()
+                oppPokemonBefore = oppPokemon.clone()
+                self.doMove(curPokemon, oppPokemon, move)
+                state = self.getPossibleMoves(curPokemon, oppPokemon)
+                newScore, newMoveI = self.gameAI(state, depth-1, not maximizing, curPokemon, oppPokemon, bestMoveI)
+                if newScore > bestScore:
+                    bestScore = newScore
+                    bestMoveI = newMoveI
+                else:
+                    curPokemon = curPokemonBefore.clone()
+                    oppPokemon = oppPokemonBefore.clone()
+            return bestScore, bestMoveI
+        else:
+            bestMoveI = 0
+            bestScore = state[1][bestMoveI]
+            print(bestScore)
+            for i in range(len(state[0])):
+                move = state[0][i]
+                curPokemonBefore = curPokemon.clone()
+                oppPokemonBefore = oppPokemon.clone()
+                self.doMove(curPokemon, oppPokemon, move)
+                state = self.getPossibleMoves(curPokemon, oppPokemon)
+                newScore, newMoveI = self.gameAI(state, depth - 1, not maximizing, curPokemon, oppPokemon, bestMoveI)
+                if newScore < bestScore:
+                    bestScore = newScore
+                    bestMoveI = newMoveI
+                else:
+                    curPokemon = curPokemonBefore.clone()
+                    oppPokemon = oppPokemonBefore.clone()
+            return bestScore, bestMoveI
+    def getPossibleMoves(self, curPokemon, oppPokemon):
+        possibleDamage = []
+        for move in curPokemon.moves:
+            damage = curPokemon.attackPokemon(oppPokemon, move)
+            possibleDamage.append(damage)
+        for i in range(len(self.items)):
+            possibleDamage.append(0)
+        for i in range(len(self.party) - 1):
+            possibleDamage.append(0)
+
+        possibleHeal = []
+        for move in curPokemon.moves:
+            possibleHeal.append(0)
+        for item in self.items:
+            if item == 'Potion':
+                possibleHeal.append(curPokemon.hp - curPokemon.currentHP)
+            else:
+                possibleHeal.append(0)
+        for i in range(len(self.party) - 1):
+            possibleHeal.append(0)
+
+        possibleMoves = []
+        for move in curPokemon.moves:
+            possibleMoves.append(move)
+        for item in self.items:
+            possibleMoves.append(item)
+        for pokemon in self.party:
+            if pokemon != curPokemon:
+                possibleMoves.append(f'switch {pokemon.name}')
+        # print(possibleMoves)
+
+        possibleScores = []
+        for i in range(len(possibleDamage)):
+            possibleScores.append(possibleDamage[i] + possibleHeal[i])
+        # print(possibleDamage, possibleHeal)
+
+        return [possibleMoves, possibleScores]
+    def doMove(self, curPokemon, oppPokemon, move):
+        if move == 'Potion':
+            self.useItem(move, curPokemon)
+            self.addItem('Place Holder')
+        elif move == 'Place Holder':
+            pass
+        elif move[:6] == 'switch':
+            pass
+        else:
+            curPokemon.attackPokemon(oppPokemon, move)
