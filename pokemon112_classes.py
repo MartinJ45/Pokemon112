@@ -1,10 +1,14 @@
 import random
+import os, pathlib
 
 class Pokemon:
     def __init__(self, name, level, sprites=None):
-        # self.data = dict()
-        self.name = name
-        self.nickName = name.upper()
+        if str(name).isdigit():
+            self.statsData = Pokemon.readData('pokemonData.txt', str(name), 1)
+            self.name = self.statsData[0]
+        else:
+            self.name = name
+        self.nickName = self.name.upper()
         self.level = level
         self.experience = level ** 3
         self.moves = []
@@ -19,7 +23,7 @@ class Pokemon:
         self.updateStats()
         self.currentHP = self.hp
         if sprites:
-            self.frontSprite, self.backSprite = sprites[self.ID]
+            self.frontSprite, self.backSprite, self.menuSprite = sprites[self.ID]
     def __repr__(self):
         return (f"Name:{self.name} | Level:{self.level} | Current HP:{self.currentHP} | Moves:{self.moves} | "
                 f"HP:{self.hp} | Atk:{self.attack} | Def:{self.defense} | SpAtk:{self.specialAttack} | "
@@ -33,9 +37,11 @@ class Pokemon:
         clonePokemon.currentHP = self.currentHP
         return clonePokemon
     def updateStats(self):
+        self.name = self.statsData[0]
         self.ID = int(self.statsData[1])
         self.type1 = self.statsData[2]
         self.type2 = self.statsData[3]
+        self.evoCondition = self.statsData[4]
         self.hp = Pokemon.updateHP(int(self.statsData[5]), self.level)
         self.attack = Pokemon.updateStat(int(self.statsData[6]), self.level)
         self.defense = Pokemon.updateStat(int(self.statsData[7]), self.level)
@@ -46,17 +52,18 @@ class Pokemon:
         for i in range(len(self.movesData)):
             elem = self.movesData[i]
             if elem.isdigit() and int(elem) <= self.level:
-                moveData = Pokemon.readData('moveData.txt', self.movesData[i+1])
+                moveData = Pokemon.readData('moveData.txt', self.movesData[i + 1])
                 if not moveData:
                     raise Exception(f'{self.movesData[i+1]} not found in moveData.txt')
-                self.moves.append(moveData[0])
-                self.moveTypes.append(moveData[1])
-                self.moveCategories.append(moveData[2])
-                self.movePowers.append(moveData[3])
-                acc = int(moveData[4]) if moveData[4].isdigit() else moveData[4]
-                self.moveAccuracies.append(acc)
-                self.currentMovePP.append(int(moveData[5]))
-                self.maxMovePP.append(int(moveData[5]))
+                if moveData[0] not in self.moves:
+                    self.moves.append(moveData[0])
+                    self.moveTypes.append(moveData[1])
+                    self.moveCategories.append(moveData[2])
+                    self.movePowers.append(moveData[3])
+                    acc = int(moveData[4]) if moveData[4].isdigit() else moveData[4]
+                    self.moveAccuracies.append(acc)
+                    self.currentMovePP.append(int(moveData[5]))
+                    self.maxMovePP.append(int(moveData[5]))
                 if len(self.moves) > 4:
                     self.moves.pop(0)
                     self.moveTypes.pop(0)
@@ -113,11 +120,13 @@ class Pokemon:
         self.experience += expGain
         if self.experience > (self.level + 1) ** 3:
             self.levelUp()
+            return True
+        return False
     def levelUp(self):
         self.level += 1
         missingHP = self.hp - self.currentHP
         self.updateStats()
-        # self.updateMoves()
+        self.updateMoves()
         self.currentHP = self.hp - missingHP
     @staticmethod
     def getTypeEffectiveness(type1, type2):
@@ -157,32 +166,44 @@ class Pokemon:
         stat = int(round(stat))
         return stat
     @staticmethod
-    def readData(fileName, name):
-        with open('Pokemon112/' + fileName, encoding='utf-8') as f:
+    def readData(fileName, name, index=0):
+        with open(os.path.join(pathlib.Path(__file__).parent, f'data/{fileName}'), encoding='utf-8') as f:
             fileString = f.read()
             fileList = fileString.splitlines()
             fileList.pop(0)
             for line in fileList:
                 lineData = line.split(',')
-                if lineData[0] == name:
+                if lineData[index] == name:
                     return lineData
 
 class Trainer:
-    def __init__(self, name, spriteSheet=None, x=0, y=0):
+    def __init__(self, name, x=0, y=0):
         self.name = name
-        self.spriteSheet = spriteSheet
+        self.money = 1000
+        self.message1 = ''
+        self.message2 = ''
         self.spriteCount = 0
-        if spriteSheet:
-            self.frontSprites = [spriteSheet[0], spriteSheet[3], spriteSheet[0]]
-            self.backSprites = [spriteSheet[1], spriteSheet[4], spriteSheet[1]]
-            self.sideSprites = [spriteSheet[2], spriteSheet[5], spriteSheet[2]]
         self.facing = 'front'
         self.isMoving = False
         self.x = x
+        self.dx = 0
         self.y = y
+        self.dy = 0
+        self.move = False
         self.party = []
         self.items = dict()
         self.defeated = False
+    def clone(self):
+        clonedTrainer = Trainer(self.name)
+        for pokemon in self.party:
+            clonedTrainer.addToParty(pokemon.clone())
+        for item in self.items:
+            clonedTrainer.addItem(item)
+        return clonedTrainer
+    def addSprite(self, spriteSheet):
+        self.frontSprites = [spriteSheet[0], spriteSheet[3], spriteSheet[0]]
+        self.backSprites = [spriteSheet[1], spriteSheet[4], spriteSheet[1]]
+        self.sideSprites = [spriteSheet[2], spriteSheet[5], spriteSheet[2]]
     def getSprite(self):
         if self.isMoving:
             self.spriteCount += 1
@@ -206,6 +227,24 @@ class Trainer:
             self.party.remove(pokemon)
             return f'Removed {pokemon} from party!'
         return None
+    def partyShift(self, pokemonIndex):
+        pokemon1 = self.party[0]
+        pokemon2 = self.party[pokemonIndex]
+        self.party[0] = pokemon2
+        self.party[pokemonIndex] = pokemon1
+    def hasPokemon(self):
+        count = 0
+        for pokemon in self.party:
+            if pokemon.currentHP == 0:
+                count += 1
+        if count == len(self.party):
+            return False
+        return True
+    def healAll(self):
+        for pokemon in self.party:
+            pokemon.currentHP = pokemon.hp
+            for i in range(len(pokemon.moves)):
+                pokemon.currentMovePP[i] = pokemon.maxMovePP[i]
     def addItem(self, item):
         self.items[item] = self.items.get(item, 0) + 1
     def useItem(self, item, pokemon):
@@ -214,21 +253,60 @@ class Trainer:
             if pokemon.currentHP > pokemon.hp:
                 pokemon.currentHP = pokemon.hp
         if item == 'Pokeball':
-            pass
+            if len(self.party) < 6:
+                self.party.append(pokemon)
         self.items[item] -= 1
         if self.items[item] == 0:
             self.items.pop(item)
-
-    def determineMove(self, curPokemon, oppPokemon):
-        possibleMoves, possibleScores = self.getPossibleMoves(curPokemon.clone(), oppPokemon.clone())
-        return self.determineMoveHelper(curPokemon.clone(), oppPokemon.clone(), possibleMoves, possibleScores, 0, '')
-    def determineMoveHelper(self, curPokemon, oppPokemon, possibleMoves, possibleScores, score, bestMove):
-        index = possibleScores.index(max(possibleScores))
-        score = possibleScores[index]
-        move = possibleMoves[index]
-        print(possibleMoves)
-        print(possibleScores)
-        return score, move
+    def determineMove(self, opponent):
+        bestMoveL = self.determineMoveHelper([], self.clone(), opponent.clone(), 0)
+        if bestMoveL == []:
+            return self.party[0].moves[0]
+        # print(bestMoveL)
+        return bestMoveL[0]
+    def determineMoveHelper(self, bestMoveL, player, opponent, depth):
+        depth += 1
+        possibleMoves = player.getPossibleMoves(player.clone().party[0], opponent.clone().party[0])
+        possibleOppMoves = opponent.getPossibleMoves(opponent.clone().party[0], player.clone().party[0])
+        # base case
+        if player.party[0].currentHP == 0:
+            return []
+        elif opponent.party[0].currentHP == 0:
+            return bestMoveL
+        # recursive case
+        else:
+            for oppMove in possibleOppMoves:
+                if ((oppMove == 'Potion' and oppMove in opponent.items) or oppMove != 'Potion' or
+                        isinstance(oppMove, Pokemon) and oppMove != 'Pokeball'\
+                        and opponent.party[0].clone().attackPokemon(player.party[0].clone(), oppMove) > 0):
+                    if oppMove == 'Potion' and oppMove not in opponent.items:
+                        continue
+                    if oppMove == 'Pokeball':
+                        continue
+                    if oppMove != 'Potion' and not isinstance(oppMove, Pokemon) and opponent.clone().party[0].attackPokemon(player.clone().party[0], oppMove) == 0:
+                        continue
+                    for move in possibleMoves:
+                        # check if is legal
+                        if (move == 'Potion' and move in player.items) or move != 'Potion':
+                            if move == 'Potion' and move not in player.items:
+                                continue
+                            if move != 'Potion' and not isinstance(move, Pokemon) and player.clone().party[0].attackPokemon(opponent.clone().party[0], move) == 0:
+                                continue
+                            bestMoveL.append(move)
+                            # make the move
+                            clonedOpponent = opponent.clone()
+                            clonedPlayer = player.clone()
+                            clonedOpponent.doMove(clonedOpponent.party[0], clonedPlayer.party[0], oppMove)
+                            clonedPlayer.doMove(clonedPlayer.party[0], clonedOpponent.party[0], move)
+                            # recursively try and solve the puzzle:
+                            solution = clonedPlayer.determineMoveHelper(bestMoveL, clonedPlayer, clonedOpponent, depth)
+                            # we did it :)
+                            if solution != []:
+                                return solution
+                            # we did not do it, undo move
+                            bestMoveL.pop()
+            # no solution found :(
+            return []
     def getPossibleMoves(self, curPokemon, oppPokemon):
         possibleDamage = []
         for move in curPokemon.moves:
@@ -257,7 +335,7 @@ class Trainer:
             possibleMoves.append(item)
         for pokemon in self.party:
             if pokemon != curPokemon:
-                possibleMoves.append(f'switch {pokemon.name}')
+                possibleMoves.append(pokemon)
         # print(possibleMoves)
 
         possibleScores = []
@@ -265,85 +343,14 @@ class Trainer:
             possibleScores.append(possibleDamage[i] + possibleHeal[i])
         # print(possibleDamage, possibleHeal)
 
-        return [possibleMoves, possibleScores]
+        return possibleMoves
     def doMove(self, curPokemon, oppPokemon, move):
         if move == 'Potion':
             self.useItem(move, curPokemon)
-            self.addItem('Place Holder')
-        elif move == 'Place Holder':
+        elif move == 'Pokeball':
             pass
-        elif move[:6] == 'switch':
-            pass
+        elif isinstance(move, Pokemon):
+            index = self.party.index(move)
+            self.partyShift(index)
         else:
             curPokemon.attackPokemon(oppPokemon, move)
-    # def determineMoveHelper(self, curPokemon, oppPokemon, possibleMoves, possibleScores, score, bestMove):
-    #     if oppPokemon.currentHP == 0:
-    #         return score, bestMove
-    #     else:
-    #         bestScore = 0
-    #         for i in range(len(possibleMoves)):
-    #             move = possibleMoves[i]
-    #             score += possibleScores[i]
-    #             curPokemonBefore = curPokemon.clone()
-    #             oppPokemonBefore = oppPokemon.clone()
-    #             itemsBefore = dict(self.items)
-    #             self.doMove(curPokemon, oppPokemon, move)
-    #             newPossibleMoves, newPossibleScores = self.getPossibleMoves(curPokemon, oppPokemon)
-    #             score, newMove = self.determineMoveHelper(curPokemon, oppPokemon, newPossibleMoves, newPossibleScores, score, move)
-    #             if score > bestScore:
-    #                 bestScore = score
-    #                 bestMove = newMove
-    #                 self.items = itemsBefore
-    #             else:
-    #                 curPokemon = curPokemonBefore
-    #                 oppPokemon = oppPokemonBefore
-    #                 self.items = itemsBefore
-    #                 # score -= possibleScores[i]
-    #         print(possibleMoves)
-    #         print(possibleScores)
-    #         return score, bestMove
-    # def determineMove(self, curPokemon, opponent, oppPokemon):
-    #     state = self.getPossibleMoves(curPokemon.clone(), oppPokemon.clone())
-    #     self.gameAI(state, 5, True,
-    #                 curPokemon.clone(), oppPokemon.clone(), 0)
-    # def gameAI(self, state, depth, maximizing, curPokemon, oppPokemon, moveI):
-    #     print('depth', depth)
-    #     if depth == 0: # base case
-    #         # return score of the state
-    #         return state[1][moveI], moveI
-    #     if maximizing:
-    #         bestMoveI = 0
-    #         bestScore = state[1][bestMoveI] * -1
-    #         print(bestScore)
-    #         for i in range(len(state[0])):
-    #             move = state[0][i]
-    #             curPokemonBefore = curPokemon.clone()
-    #             oppPokemonBefore = oppPokemon.clone()
-    #             self.doMove(curPokemon, oppPokemon, move)
-    #             state = self.getPossibleMoves(curPokemon, oppPokemon)
-    #             newScore, newMoveI = self.gameAI(state, depth-1, not maximizing, curPokemon, oppPokemon, bestMoveI)
-    #             if newScore > bestScore:
-    #                 bestScore = newScore
-    #                 bestMoveI = newMoveI
-    #             else:
-    #                 curPokemon = curPokemonBefore.clone()
-    #                 oppPokemon = oppPokemonBefore.clone()
-    #         return bestScore, bestMoveI
-    #     else:
-    #         bestMoveI = 0
-    #         bestScore = state[1][bestMoveI]
-    #         print(bestScore)
-    #         for i in range(len(state[0])):
-    #             move = state[0][i]
-    #             curPokemonBefore = curPokemon.clone()
-    #             oppPokemonBefore = oppPokemon.clone()
-    #             self.doMove(curPokemon, oppPokemon, move)
-    #             state = self.getPossibleMoves(curPokemon, oppPokemon)
-    #             newScore, newMoveI = self.gameAI(state, depth - 1, not maximizing, curPokemon, oppPokemon, bestMoveI)
-    #             if newScore < bestScore:
-    #                 bestScore = newScore
-    #                 bestMoveI = newMoveI
-    #             else:
-    #                 curPokemon = curPokemonBefore.clone()
-    #                 oppPokemon = oppPokemonBefore.clone()
-    #         return bestScore, bestMoveI
