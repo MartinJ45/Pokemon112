@@ -150,3 +150,4 @@ Dragonair,1,Wrap,1,Leer,1,Thunder Wave,1,Twister,8,Thunder Wave,15,Twister,22,Dr
 Dragonite,1,Wrap,1,Leer,1,Thunder Wave,1,Twister,8,Thunder Wave,15,Twister,22,Dragon Rage,29,Slam,38,Agility,47,Safeguard,55,Wing Attack,61,Outrage,75,Hyper Beam
 Mewtwo,1,Confusion,1,Disable,11,Barrier,22,Swift,33,Psych Up,44,Future Sight,55,Mist,66,Psychic,77,Amnesia,88,Recover,99,Safeguard
 Mew,1,Pound,10,Transform,20,Mega Punch,30,Metronome,40,Psychic,50,Ancientpower
+Mandi,1,Scratch,1,Bite,1,Water Gun,1,Surf

@@ -134,7 +134,7 @@ Constrict,Normal,Physical,10,100,35
 Amnesia,Psychic,Status,,,20
 Kinesis,Psychic,Status,,80,15
 Soft-Boiled,Normal,Status,,,5
-High Jump Kick,Fighting,Physical,130,90,10
+Hi Jump Kick,Fighting,Physical,130,90,10
 Glare,Normal,Status,,100,30
 Dream Eater,Psychic,Special,100,100,15
 Poison Gas,Poison,Status,,90,40

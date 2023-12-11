@@ -131,7 +131,7 @@ Magikarp,129,Water,,20,20,10,55,80,20,15
 Gyarados,130,Water,Flying,,95,125,79,81,100,60
 Lapras,131,Water,Ice,,130,85,80,60,95,85
 Ditto,132,Normal,,,48,48,48,48,48,48
-Eevee,133,Normal,,Water Stone_Thunder Stone_Fire Stone55,55,50,55,65,45
+Eevee,133,Normal,,Water Stone_Thunder Stone_Fire Stone,55,55,50,55,65,45
 Vaporeon,134,Water,,,130,65,60,65,95,110
 Jolteon,135,Electric,,,65,65,60,130,95,110
 Flareon,136,Fire,,,65,130,60,65,110,95
@@ -150,3 +150,4 @@ Dragonair,148,Dragon,,55,61,84,65,70,70,70
 Dragonite,149,Dragon,Flying,,91,134,95,80,100,100
 Mewtwo,150,Psychic,,,106,110,90,130,90,154
 Mew,151,Psychic,,,100,100,100,100,100,100
+Mandi,152,Water,,,100,100,100,100,100,100
