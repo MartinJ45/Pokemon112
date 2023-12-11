@@ -116,11 +116,12 @@ class Pokemon:
     def gainExperience(self, defeatedPokemon):
         baseStatTotal = (defeatedPokemon.hp + defeatedPokemon.attack + defeatedPokemon.specialAttack +
                          defeatedPokemon.defense + defeatedPokemon.specialDefense + defeatedPokemon.speed)
-        expGain = (baseStatTotal * defeatedPokemon.level) / 2
+        expGain = (baseStatTotal * defeatedPokemon.level) / 3
         self.experience += expGain
-        if self.experience > (self.level + 1) ** 3:
+        while self.experience > (self.level + 1) ** 3:
             self.levelUp()
-            return True
+            if self.experience < (self.level + 1) ** 3:
+                return True
         return False
     def levelUp(self):
         self.level += 1
