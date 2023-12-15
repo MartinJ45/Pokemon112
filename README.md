@@ -22,6 +22,7 @@ Other libraries include: <br>
 + `pathlib` <br>
 + `random` <br>
 + `numpy` <br>
++ `time` <br>
 
 ### Instructions
 
