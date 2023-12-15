@@ -27,10 +27,10 @@ Pikachu,1,Thunder Shock,1,Growl,6,Tail Whip,8,Thunder Wave,11,Quick Attack,15,Do
 Raichu,1,Thunder Shock,1,Tail Whip,1,Quick Attack,1,Thunderbolt
 Sandshrew,1,Scratch,6,Defense Curl,11,Sand Attack,17,Poison Sting,23,Slash,30,Swift,37,Fury Swipes,45,Sand Tomb,53,Sandstorm
 Sandslash,1,Scratch,1,Defense Curl,1,Sand Attack,6,Defense Curl,11,Sand Attack,17,Poison Sting,24,Slash,33,Swift,42,Fury Swipes,52,Sand Tomb,62,Sandstorm
-Nidoran,1,Growl,1,Scratch,8,Tail Whip,12,Double Kick,17,Poison Sting,20,Bite,23,Helping Hand,30,Fury Swipes,38,Flatter,47,Crunch
+Nidoran♀,1,Growl,1,Scratch,8,Tail Whip,12,Double Kick,17,Poison Sting,20,Bite,23,Helping Hand,30,Fury Swipes,38,Flatter,47,Crunch
 Nidorina,1,Growl,1,Scratch,8,Tail Whip,12,Double Kick,18,Poison Sting,22,Bite,26,Helping Hand,34,Fury Swipes,43,Flatter,53,Crunch
 Nidoqueen,1,Scratch,1,Tail Whip,1,Double Kick,1,Poison Sting,23,Body Slam
-Nidoran,1,Leer,1,Peck,8,Focus Energy,12,Double Kick,17,Poison Sting,20,Horn Attack,23,Helping Hand,30,Fury Attack,38,Flatter,47,Horn Drill
+Nidoran♂,1,Leer,1,Peck,8,Focus Energy,12,Double Kick,17,Poison Sting,20,Horn Attack,23,Helping Hand,30,Fury Attack,38,Flatter,47,Horn Drill
 Nidorino,1,Leer,1,Peck,8,Focus Energy,12,Double Kick,18,Poison Sting,22,Horn Attack,26,Helping Hand,34,Fury Attack,43,Flatter,53,Horn Drill
 Nidoking,1,Peck,1,Focus Energy,1,Double Kick,1,Poison Sting,23,Thrash
 Clefairy,1,Pound,1,Growl,5,Encore,9,Sing,13,Doubleslap,17,Follow Me,21,Minimize,25,Defense Curl,29,Metronome,33,Cosmic Power,37,Moonlight,41,Light Screen,45,Meteor Mash

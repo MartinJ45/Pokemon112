@@ -27,10 +27,10 @@ Pikachu,25,Electric,,Thunder Stone,35,55,40,90,50,50
 Raichu,26,Electric,Psychic,,60,90,55,110,80,90
 Sandshrew,27,Ground,,22,50,75,85,40,30,20
 Sandslash,28,Ground,,,75,100,110,65,55,45
-NidoranF,29,Poison,,16,55,47,52,41,40,40
+Nidoran♀,29,Poison,,16,55,47,52,41,40,40
 Nidorina,30,Poison,,Moon Stone,70,62,67,56,55,55
 Nidoqueen,31,Poison,Ground,,90,92,87,76,85,75
-NidoranM,32,Poison,,16,46,57,40,50,40,40
+Nidoran♂,32,Poison,,16,46,57,40,50,40,40
 Nidorino,33,Poison,,Moon Stone,61,72,57,65,55,55
 Nidoking,34,Poison,Ground,,81,102,77,85,75,85
 Clefairy,35,Normal,,Moon Stone,70,45,48,35,65,60
