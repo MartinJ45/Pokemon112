@@ -4,17 +4,18 @@
 from cmu_graphics import *
 from PIL import Image
 import numpy as np
+import time
 from pokemon112_classes import *
 
 '''
 ----------------------------- THINGS TO ADD -----------------------------
-+ Add a game timer
 + Add move selection after leveling up
 + NPC sprites
 + Add more buildings you can enter
 + Pokemon summary screen
 + Options screen
 + Choose starter Pokemon
++ Full screen
 + Pokedex
 + Game start sequence
 ----------------------------- THINGS TO FIX -----------------------------
@@ -33,7 +34,6 @@ def openImage(fileName):
     :param fileName:
     :return:
     '''
-    print(type(Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))))
     return Image.open(os.path.join(pathlib.Path(__file__).parent,fileName))
 
 def loadBackgrounds(app):
@@ -235,6 +235,7 @@ def createGameVariables(app):
     # game variables
     app.won = 0
     app.scene = 0
+    app.totalGameTime = 0
     app.cameraPos = [69, 19]
     # player variables
     app.player = Trainer('Player')
@@ -354,6 +355,7 @@ def loadGameVariables(app):
             # game variables
             app.won = int(filein.readline())
             app.scene = int(filein.readline())
+            app.totalGameTime = float(filein.readline())
             cameraPos = filein.readline().split(',')
             app.cameraPos = [int(cameraPos[0]), int(cameraPos[1])]
             # player variables
@@ -408,6 +410,8 @@ def setupGame(app):
     :param app:
     :return:
     '''
+    app.curGameTimer = 0
+    app.t0 = time.time()
     app.counter = 0
     app.pause = False
 
@@ -939,7 +943,8 @@ def redrawAll(app):
     if app.player.defeated:
         drawLossMenu(app)
 
-    drawLabel(app.playerPos, 20, 20, fill='red')
+    # drawLabel(app.playerPos, 20, 20, fill='red')
+    # drawLabel(f'{int((app.totalGameTime + app.curGameTimer)//3600)}:{int((app.totalGameTime + app.curGameTimer)//60%60)}:{int((app.totalGameTime + app.curGameTimer)%60)}', 20, 40, fill='red')
 
 def drawAlphaNum(app, left, top, string, spacing=8, size=(10, 16), color1=(64, 64, 64), color2=(216, 208, 176)):
     for char in string:
@@ -1160,7 +1165,19 @@ def drawMenu(app):
         drawImage(CMUImage(app.menuSprites['trainerSprite']), 320, 106, width=80, height=110)
         drawAlphaNum(app, 60, 80, f'NAME {app.player.name}', spacing=14, size=(16, 18),
                      color1=(96, 96, 96), color2=(208, 208, 200))
-        drawAlphaNum(app, 60, 136, f'MONEY {app.player.money}', spacing=14, size=(16, 18),
+        drawAlphaNum(app, 60, 136, f'MONEY   {app.player.money}', spacing=14, size=(16, 18),
+                     color1=(96, 96, 96), color2=(208, 208, 200))
+        drawAlphaNum(app, 60, 168, f'POKEMON {len(app.player.party)}', spacing=14, size=(16, 18),
+                     color1=(96, 96, 96), color2=(208, 208, 200))
+
+        hours = f'{int((app.totalGameTime + app.curGameTimer) // 3600)}'
+        hours = '0' + hours if len(hours) == 1 else hours
+        minutes = f'{int((app.totalGameTime + app.curGameTimer) // 60 % 60)}'
+        minutes = '0' + minutes if len(minutes) == 1 else minutes
+
+        drawAlphaNum(app, 60, 192, f'          .', spacing=14, size=(16, 18),
+                     color1=(96, 96, 96), color2=(208, 208, 200))
+        drawAlphaNum(app, 60, 200, f'TIME    {hours}.{minutes}', spacing=14, size=(16, 18),
                      color1=(96, 96, 96), color2=(208, 208, 200))
         drawAlphaNum(app, 60, 242, f'TRAINERS DEFEATED', size=(10, 12),
                      color1=(96, 96, 96), color2=(208, 208, 200))
@@ -1329,33 +1346,9 @@ def drawBattleBoxMsg(app):
 
 '--------------------------- OTHER FUNCTIONS ----------------------------'
 
-def setupPokemonBattle(app, trainer=None, wildType=3):
-    wildType -= 3
-    # app.scene = 1
-    app.currentAction = ''
-    app.actionIndex = [0, 0]
-    if app.wildBattle:
-        randomPokemonNum = random.randint(1, 100)
-        for pokemon in app.wildTypes[wildType]:
-            if randomPokemonNum <= app.wildTypes[wildType][pokemon]:
-                randomPokemon = pokemon
-                break
-
-        levelAdjust = app.curPokemon.level // 3
-        app.oppPokemon = Pokemon(randomPokemon,
-                                 random.randint(2*(wildType+1) + levelAdjust, 4*(wildType+1) + levelAdjust),
-                                 app.pokemonSprites)
-        app.oppPokemon.updateStats()
-        app.oppPokemon.updateMoves()
-        app.curOpponent = Trainer('Wild Pokemon')
-        app.curOpponent.addToParty(app.oppPokemon)
-    else:
-        app.oppPokemon = trainer.party[0]
-        app.curOpponent = trainer
-    app.battleBoxMsg = [f'What will', f'{app.curPokemon.nickName} do?']
-    app.isBattling = True
-
 def updateScene(app):
+    app.curGameTimer = (time.time() - app.t0)
+
     counter = 0
     for opponent in app.opponents:
         if opponent.defeated:
@@ -1416,6 +1409,65 @@ def updateScene(app):
     if app.scene == 1:  # if the player is in a battle
         app.battleBoxMsg = [f'What will', f'{app.curPokemon.nickName} do?']
 
+def onStep(app):
+    if app.mainMenu or app.player.defeated:
+        return
+    app.counter += 1
+    updateScene(app)
+
+'------------ OVERWORLD -----------'
+
+def checkForBuilding(app):
+    for door in app.doorPos:
+        if app.playerPos == app.doorPos[door]:
+            if door == 'pokecenter':
+                app.scene = 3
+                app.cameraPos = [9, 8]
+                app.curGrid = app.pokecenterGrid
+            if door == 'pokemart':
+                app.scene = 4
+                app.cameraPos = [8, 5]
+                app.curGrid = app.pokemartGrid
+
+def playerCanMove(app, move, grid):
+    playerPos = [app.cameraPos[0] + 5, app.cameraPos[1] + 7]
+    if grid[playerPos[0] + move[0]][playerPos[1] + move[1]] in (1, 2):
+        return False
+    return True
+
+def saveGame(app):
+    with open(os.path.join(pathlib.Path(__file__).parent, 'data/save.txt'), 'w') as fileout:
+        if app.curGrid is app.mapGrid:
+            scene = 0
+        elif app.curGrid is app.pokecenterGrid:
+            scene = 3
+        elif app.curGrid is app.pokemartGrid:
+            scene = 4
+        fileout.write(f'{app.won}\n')
+        fileout.write(f'{scene}\n')
+        fileout.write(f'{app.totalGameTime + app.curGameTimer}\n')
+        fileout.write(f'{app.cameraPos[0]},{app.cameraPos[1]}\n')
+        fileout.write(f'{app.player.name},{app.player.money},{len(app.player.party)},{len(app.player.items)}\n')
+        for pokemon in app.player.party:
+            fileout.write(f'{pokemon.name},{pokemon.nickName},{pokemon.level},{pokemon.experience},'
+                          f'{pokemon.currentHP}\n')
+            for i in range(len(pokemon.moves)):
+                fileout.write(f'{pokemon.currentMovePP[i]}')
+                if i != len(pokemon.moves) - 1:
+                    fileout.write(',')
+            fileout.write('\n')
+        for item in app.player.items:
+            fileout.write(f'{item},{app.player.items[item]}\n')
+        for trainer in app.opponents:
+            fileout.write(f'{trainer.name},{trainer.money},{int(trainer.defeated)},{trainer.x},{trainer.y},'
+                          f'{len(trainer.party)},{len(trainer.items)}\n')
+            for pokemon in trainer.party:
+                fileout.write(f'{pokemon.name},{pokemon.nickName},{pokemon.level}\n')
+            for item in trainer.items:
+                fileout.write(f'{item},{trainer.items[item]}\n')
+
+'------------- BATTLE -------------'
+
 def checkForBattle(app):
     for trainer in app.opponents:
         if (app.playerPos[0] == trainer.y and trainer.x - 5 <= app.playerPos[1] <= trainer.x + 5
@@ -1432,23 +1484,31 @@ def checkForBattle(app):
             app.pause = True
             app.doBattleAnimation = True
 
-def checkForBuilding(app):
-    for door in app.doorPos:
-        if app.playerPos == app.doorPos[door]:
-            if door == 'pokecenter':
-                app.scene = 3
-                app.cameraPos = [9, 8]
-                app.curGrid = app.pokecenterGrid
-            if door == 'pokemart':
-                app.scene = 4
-                app.cameraPos = [8, 5]
-                app.curGrid = app.pokemartGrid
+def setupPokemonBattle(app, trainer=None, wildType=3):
+    wildType -= 3
+    # app.scene = 1
+    app.currentAction = ''
+    app.actionIndex = [0, 0]
+    if app.wildBattle:
+        randomPokemonNum = random.randint(1, 100)
+        for pokemon in app.wildTypes[wildType]:
+            if randomPokemonNum <= app.wildTypes[wildType][pokemon]:
+                randomPokemon = pokemon
+                break
 
-def checkEvo(app):
-    app.player.party[0] = Pokemon(app.curPokemon.ID + 1, app.curPokemon.level, app.pokemonSprites)
-    app.player.party[0].updateStats()
-    app.player.party[0].updateMoves()
-    app.curPokemon = app.player.party[0]
+        levelAdjust = app.curPokemon.level // 3
+        app.oppPokemon = Pokemon(randomPokemon,
+                                 random.randint(2*(wildType+1) + levelAdjust, 4*(wildType+1) + levelAdjust),
+                                 app.pokemonSprites)
+        app.oppPokemon.updateStats()
+        app.oppPokemon.updateMoves()
+        app.curOpponent = Trainer('Wild Pokemon')
+        app.curOpponent.addToParty(app.oppPokemon)
+    else:
+        app.oppPokemon = trainer.party[0]
+        app.curOpponent = trainer
+    app.battleBoxMsg = [f'What will', f'{app.curPokemon.nickName} do?']
+    app.isBattling = True
 
 def advanceBattleTurn(app, playerMove):
     if playerMove != 'Pokeball':
@@ -1566,47 +1626,13 @@ def opponentTurn(app, opponentMove):
     else:
         app.oppPokemon.attackPokemon(app.curPokemon, opponentMove)
 
-def playerCanMove(app, move, grid):
-    playerPos = [app.cameraPos[0] + 5, app.cameraPos[1] + 7]
-    if grid[playerPos[0] + move[0]][playerPos[1] + move[1]] in (1, 2):
-        return False
-    return True
+def checkEvo(app):
+    app.player.party[0] = Pokemon(app.curPokemon.ID + 1, app.curPokemon.level, app.pokemonSprites)
+    app.player.party[0].updateStats()
+    app.player.party[0].updateMoves()
+    app.curPokemon = app.player.party[0]
 
-def saveGame(app):
-    with open(os.path.join(pathlib.Path(__file__).parent, 'data/save.txt'), 'w') as fileout:
-        if app.curGrid is app.mapGrid:
-            scene = 0
-        elif app.curGrid is app.pokecenterGrid:
-            scene = 3
-        elif app.curGrid is app.pokemartGrid:
-            scene = 4
-        fileout.write(f'{app.won}\n')
-        fileout.write(f'{scene}\n')
-        fileout.write(f'{app.cameraPos[0]},{app.cameraPos[1]}\n')
-        fileout.write(f'{app.player.name},{app.player.money},{len(app.player.party)},{len(app.player.items)}\n')
-        for pokemon in app.player.party:
-            fileout.write(f'{pokemon.name},{pokemon.nickName},{pokemon.level},{pokemon.experience},'
-                          f'{pokemon.currentHP}\n')
-            for i in range(len(pokemon.moves)):
-                fileout.write(f'{pokemon.currentMovePP[i]}')
-                if i != len(pokemon.moves) - 1:
-                    fileout.write(',')
-            fileout.write('\n')
-        for item in app.player.items:
-            fileout.write(f'{item},{app.player.items[item]}\n')
-        for trainer in app.opponents:
-            fileout.write(f'{trainer.name},{trainer.money},{int(trainer.defeated)},{trainer.x},{trainer.y},'
-                          f'{len(trainer.party)},{len(trainer.items)}\n')
-            for pokemon in trainer.party:
-                fileout.write(f'{pokemon.name},{pokemon.nickName},{pokemon.level}\n')
-            for item in trainer.items:
-                fileout.write(f'{item},{trainer.items[item]}\n')
-
-def onStep(app):
-    if app.mainMenu or app.player.defeated:
-        return
-    app.counter += 1
-    updateScene(app)
+'-------------- MAIN --------------'
 
 def main():
     runApp(480, 320)
