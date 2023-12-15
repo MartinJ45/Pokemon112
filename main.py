@@ -12,8 +12,9 @@ from pokemon112_classes import *
 + Add move selection after leveling up
 + NPC sprites
 + Add more buildings you can enter
++ Add more items
++ Update player bag
 + Pokemon summary screen
-+ Options screen
 + Choose starter Pokemon
 + Full screen
 + Pokedex
@@ -169,8 +170,11 @@ def loadAlphaNum(battleSceneSpriteSheet):
             startLeft -= 2
         if char in ('I', 'T', 'p', '!'):
             startLeft -= 1
-        if char in (',', 'z', ' '):
+        if char in (',', ' '):
             startTop += 15
+            startLeft = 171
+        if char == 'z':
+            startTop += 16
             startLeft = 171
 
     return alphaNum
@@ -236,6 +240,7 @@ def createGameVariables(app):
     app.won = 0
     app.scene = 0
     app.totalGameTime = 0
+    app.frameType = 0
     app.cameraPos = [69, 19]
     # player variables
     app.player = Trainer('Player')
@@ -356,6 +361,7 @@ def loadGameVariables(app):
             app.won = int(filein.readline())
             app.scene = int(filein.readline())
             app.totalGameTime = float(filein.readline())
+            app.frameType = int(filein.readline())
             cameraPos = filein.readline().split(',')
             app.cameraPos = [int(cameraPos[0]), int(cameraPos[1])]
             # player variables
@@ -741,9 +747,9 @@ def onKeyPress(app, key):
                     app.buyingItems = False
         elif app.currentAction == '':
             if key == 'w':
-                app.menuIndex = app.menuIndex - 1 if app.menuIndex > 0 else 4
+                app.menuIndex = app.menuIndex - 1 if app.menuIndex > 0 else 5
             if key == 's':
-                app.menuIndex = app.menuIndex + 1 if app.menuIndex < 4 else 0
+                app.menuIndex = app.menuIndex + 1 if app.menuIndex < 5 else 0
             if key == 'l':
                 if app.menuIndex == 0:
                     app.currentAction = 'pokemon'
@@ -761,6 +767,10 @@ def onKeyPress(app, key):
                     app.menuScreenIndex = 5
                     saveGame(app)
                 if app.menuIndex == 4:
+                    app.currentAction = 'option'
+                    app.scene = 2
+                    app.menuScreenIndex = 4
+                if app.menuIndex == 5:
                     if app.curGrid is app.mapGrid:
                         app.scene = 0
                     elif app.curGrid is app.pokecenterGrid:
@@ -887,6 +897,14 @@ def onKeyPress(app, key):
                 app.currentAction = ''
                 app.menuScreenIndex = 0
                 app.isSaving = False
+        elif app.currentAction == 'option':
+            if key == 'k':
+                app.currentAction = ''
+                app.menuScreenIndex = 0
+            if key == 'a':
+                app.frameType = app.frameType - 1 if app.frameType > 0 else 27
+            if key == 'd':
+                app.frameType = app.frameType + 1 if app.frameType < 27 else 0
 
 '---------------------------- DRAW FUNCTIONS ----------------------------'
 
@@ -1049,7 +1067,7 @@ def drawMenu(app):
     if app.menuScreens[app.menuScreenIndex] == 'main':
         startLeft = 336
         startTop = 0
-        drawMenuBox(app, startLeft, startTop, (13, 8))
+        drawMenuBox(app, startLeft, startTop, (13, 8), type=app.frameType)
 
         # draw labels
         startLeft = 368
@@ -1057,7 +1075,8 @@ def drawMenu(app):
         drawAlphaNum(app, startLeft, 62, 'BAG', spacing=10, size=(12, 18))
         drawAlphaNum(app, startLeft, 92, app.player.name, spacing=10, size=(12, 18))
         drawAlphaNum(app, startLeft, 122, 'SAVE', spacing=10, size=(12, 18))
-        drawAlphaNum(app, startLeft, 152, 'EXIT', spacing=10, size=(12, 18))
+        drawAlphaNum(app, startLeft, 152, 'OPTIONS', spacing=10, size=(12, 18))
+        drawAlphaNum(app, startLeft, 182, 'EXIT', spacing=10, size=(12, 18))
 
         drawImage(CMUImage(app.battleSceneSprites['blackCursor']), 352, 32 + 30 * app.menuIndex, width=12, height=12)
 
@@ -1099,8 +1118,8 @@ def drawMenu(app):
         drawImage(CMUImage(app.curPokemon.menuSprite), 5, 65 - (curPokemonAnimationSpeed * (app.counter%4)),
                   width=68, height=48)
         drawAlphaNum(app, 75, 75, app.curPokemon.nickName, color1=(248, 248, 248), color2=(112, 112, 112))
-        drawAlphaNum(app, 105, 94, str(app.curPokemon.level), color1=(248, 248, 248), color2=(112, 112, 112))
-        drawAlphaNum(app, 100, 127, f'{app.curPokemon.currentHP}  {app.curPokemon.hp}',
+        drawAlphaNum(app, 105, 95, str(app.curPokemon.level), color1=(248, 248, 248), color2=(112, 112, 112))
+        drawAlphaNum(app, 100, 128, f'{app.curPokemon.currentHP}  {app.curPokemon.hp}',
                      color1=(248, 248, 248), color2=(112, 112, 112))
         drawHealthBar(app, 67, 118, app.curPokemon.currentHP, app.curPokemon.hp)
 
@@ -1124,7 +1143,7 @@ def drawMenu(app):
         drawImage(CMUImage(cancelButton), 370, 265, width=108, height=48)
 
         if app.isPokemonSelected:
-            drawMenuBox(app, 4, 252, (2, 18), type=-2)
+            drawMenuBox(app, 4, 252, (2, 18), type=app.frameType)
             drawAlphaNum(app, 20, 280, 'Do what with this    ?',
                          spacing=12, size=(14, 18), color1=(115, 115, 115), color2=(215, 215, 215))
             drawAlphaNum(app, 230, 276, 'P K',
@@ -1184,6 +1203,20 @@ def drawMenu(app):
         for i in range(len(app.opponents)):
             if app.opponents[i].defeated:
                 drawImage(CMUImage(app.menuSprites['starSprite']), (i*47) + 67, 257, width=26, height=26)
+
+    if app.menuScreens[app.menuScreenIndex] == 'option':
+        drawRect(0, 0, 480, 320)
+        drawMenuBox(app, 0, 4, (0, 30), type=-1)
+        drawMenuBox(app, 16, 40, (2, 28), type=-2)
+        drawAlphaNum(app, 56, 64, f'OPTION', spacing=12, size=(16, 18),
+                     color1=(96, 96, 96), color2=(208, 208, 200))
+        drawMenuBox(app, 16, 108, (12, 28), type=app.frameType)
+        drawRect(32, 124, 418, 178, opacity=10)
+        drawRect(32, 128, 418, 38, fill='white')
+        drawAlphaNum(app, 56, 140, f'FRAME', spacing=12, size=(16, 18),
+                     color1=(96, 96, 96), color2=(208, 208, 200))
+        drawAlphaNum(app, 256, 140, f'TYPE {app.frameType + 1}', spacing=12, size=(16, 18),
+                     color1=(248, 128, 80), color2=(248, 48, 0))
 
 def drawItemShopMenu(app):
     drawConversation(app, app.pokemartNPCs[0])
@@ -1446,6 +1479,7 @@ def saveGame(app):
         fileout.write(f'{app.won}\n')
         fileout.write(f'{scene}\n')
         fileout.write(f'{app.totalGameTime + app.curGameTimer}\n')
+        fileout.write(f'{app.frameType}\n')
         fileout.write(f'{app.cameraPos[0]},{app.cameraPos[1]}\n')
         fileout.write(f'{app.player.name},{app.player.money},{len(app.player.party)},{len(app.player.items)}\n')
         for pokemon in app.player.party:
