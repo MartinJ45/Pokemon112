@@ -16,7 +16,6 @@ from pokemon112_classes import *
 + Update player bag
 + Pokemon summary screen
 + Choose starter Pokemon
-+ Full screen
 + Pokedex
 + Game start sequence
 ----------------------------- THINGS TO FIX -----------------------------
@@ -227,6 +226,9 @@ def onAppStart(app):
     loadBattleGraphics(app)
     loadPokemonSprites(app)
 
+    app.cellWidth = convertW(app, 32)  # w:32
+    app.cellHeight = convertH(app, 32)  # h:32
+
     app.mainMenuBox1Visible = True
     app.mainMenuBox2Visible = True
 
@@ -356,7 +358,7 @@ def loadGameVariables(app):
     :return:
     '''
     try:
-        with open(os.path.join(pathlib.Path(__file__).parent, 'data/save.txt'), 'r') as filein:
+        with open(os.path.join(pathlib.Path(__file__).parent, 'save.txt'), 'r') as filein:
             # game variables
             app.won = int(filein.readline())
             app.scene = int(filein.readline())
@@ -428,7 +430,6 @@ def setupGame(app):
     app.menuScreens = ['main', 'pokemon', 'item', 'player', 'option', 'chat']
     app.menuScreenIndex = 0
 
-    app.cellWidth = app.cellHeight = 32
     app.mapGrid = loadGrid('mapGrid.txt')
     app.pokecenterGrid = loadGrid('pokecenterGrid.txt')
     app.pokemartGrid = loadGrid('pokemartGrid.txt')
@@ -600,22 +601,24 @@ def loadGrid(filename):
 
 def onMousePress(app, mouseX, mouseY):
     if app.mainMenu:
-        if 80 < mouseX < 397 and 16 < mouseY < 93:
+        if (convertH(app, 80) < mouseX < convertW(app, 397) and
+                convertH(app, 16) < mouseY < convertH(app, 93)):
             if loadGameVariables(app):
                 setupGame(app)
                 app.mainMenu = False
-        elif 80 < mouseX < 397 and 106 < mouseY < 183:
+        elif (convertW(app, 80) < mouseX < convertW(app, 397) and
+              convertH(app, 106) < mouseY < convertH(app, 183)):
             createGameVariables(app)
             setupGame(app)
             app.mainMenu = False
 
 def onMouseMove(app, mouseX, mouseY):
     if app.mainMenu:
-        if not (80 < mouseX < 397 and 16 < mouseY < 93):
+        if not (convertW(app, 80) < mouseX < convertW(app, 397) and convertH(app, 16) < mouseY < convertH(app, 93)):
             app.mainMenuBox1Visible = True
         else:
             app.mainMenuBox1Visible = False
-        if not (80 < mouseX < 397 and 106 < mouseY < 183):
+        if not (convertW(app, 80) < mouseX < convertW(app, 397) and convertH(app, 106) < mouseY < convertH(app, 183)):
             app.mainMenuBox2Visible = True
         else:
             app.mainMenuBox2Visible = False
@@ -628,16 +631,16 @@ def onKeyHold(app, keys):
     if app.counter % 4 == 0:
         if app.scene in (0, 3, 4, 5):
             if keys[0] == 'w' and app.cameraPosD[1] == 0 and playerCanMove(app, [-1, 0], app.curGrid):
-                app.cameraPosD[0] = -8
+                app.cameraPosD[0] = -app.cellHeight/4
                 app.player.isMoving = True
             if keys[0] == 's' and app.cameraPosD[1] == 0 and playerCanMove(app, [1, 0], app.curGrid):
-                app.cameraPosD[0] = 8
+                app.cameraPosD[0] = app.cellHeight/4
                 app.player.isMoving = True
             if keys[0] == 'a' and app.cameraPosD[0] == 0 and playerCanMove(app, [0, -1], app.curGrid):
-                app.cameraPosD[1] = -8
+                app.cameraPosD[1] = -app.cellWidth/4
                 app.player.isMoving = True
             if keys[0] == 'd' and app.cameraPosD[0] == 0 and playerCanMove(app, [0, 1], app.curGrid):
-                app.cameraPosD[1] = 8
+                app.cameraPosD[1] = app.cellWidth/4
                 app.player.isMoving = True
 
 def onKeyPress(app, key):
@@ -915,11 +918,13 @@ def redrawAll(app):
 
     if app.scene == 0:      # if the player is in the overworld
         drawOverworld(app)
-        drawTrainer(app.player, 240, 160)
+        drawTrainer(app, app.player, app.width/2, app.height/2)  # center of the screen
     elif app.scene == 1:    # if the player is in a battle
-        drawImage(CMUImage(app.battleBackgrounds[0]), 0, 0, width=480, height=224)
+        drawImage(CMUImage(app.battleBackgrounds[0]),
+                  0, 0, width=app.width, height=app.height*0.7)     # x:0, y:0, w:480, h:224
         drawPokemon(app)
-        drawImage(CMUImage(app.battleSceneSprites['battleBoxBackground']), 0, 224, width=480, height=96)
+        drawImage(CMUImage(app.battleSceneSprites['battleBoxBackground']),
+                  0, app.height*0.7, width=app.width, height=app.height*0.3)    # x:0, y:224, w:480, h:96
         drawPokemonHealthBox(app)
         if app.currentAction == 'fight':
             drawMoveBox(app)
@@ -934,7 +939,7 @@ def redrawAll(app):
                 drawPokemonCenter(app)
             elif app.curGrid is app.pokemartGrid:
                 drawPokemart(app)
-            drawTrainer(app.player, 240, 160)
+            drawTrainer(app, app.player, app.width/2, app.height/2)  # center of the screen
             if app.menuScreens[app.menuScreenIndex] == 'chat':
                 if app.pokecenterHeal:
                     drawConversation(app, app.pokecenterNPCs[0])
@@ -949,22 +954,25 @@ def redrawAll(app):
         drawMenu(app)
     elif app.scene == 3:
         drawPokemonCenter(app)
-        drawTrainer(app.player, 240, 160)
+        drawTrainer(app, app.player, app.width/2, app.height/2)  # center of the screen
     elif app.scene == 4:
         drawPokemart(app)
-        drawTrainer(app.player, 240, 160)
+        drawTrainer(app, app.player, app.width/2, app.height/2)  # center of the screen
 
     if app.doBattleAnimation:
         image = app.spriteList[app.spriteCounter]
-        drawImage(image, 0, 0, width=480, height=320)
+        drawImage(image, 0, 0, width=app.width, height=app.height)
 
     if app.player.defeated:
         drawLossMenu(app)
 
-    # drawLabel(app.playerPos, 20, 20, fill='red')
+    drawLabel(app.playerPos, 20, 20, fill='red')
     # drawLabel(f'{int((app.totalGameTime + app.curGameTimer)//3600)}:{int((app.totalGameTime + app.curGameTimer)//60%60)}:{int((app.totalGameTime + app.curGameTimer)%60)}', 20, 40, fill='red')
 
 def drawAlphaNum(app, left, top, string, spacing=8, size=(10, 16), color1=(64, 64, 64), color2=(216, 208, 176)):
+    spacing = spacing * (app.cellWidth/32)
+    size = (size[0] * (app.cellWidth/32), size[1] * (app.cellHeight/32))
+
     for char in string:
         character = app.alphaNum[char]
 
@@ -987,100 +995,114 @@ def drawAlphaNum(app, left, top, string, spacing=8, size=(10, 16), color1=(64, 6
 def drawOverworld(app):
     startRow, startCol = app.cameraPos[0] - 1, app.cameraPos[1] - 1
     drawImage(CMUImage(app.overworldSprites['background']),
-              (0 - startCol) * 32 - app.cellD[1], (0 - startRow) * 32 - app.cellD[0],
-              width=1536, height=2560)
+              (0 - startCol) * app.cellWidth - app.cellD[1], (0 - startRow) * app.cellHeight - app.cellD[0],
+              width=app.width*3.2, height=app.height*8)  # w:1536, h:2560
     for trainer in app.opponents:
         if startRow < trainer.y < startRow + 12 and startCol < trainer.x < startCol + 17:
-            drawTrainer(trainer, (trainer.x - startCol) * 32 - app.cellD[1] - 16 + trainer.dx,
-                        (trainer.y - startRow) * 32 - app.cellD[0] + trainer.dy)
+            drawTrainer(app, trainer, (trainer.x - startCol) * app.cellWidth - app.cellD[1] - app.cellWidth/2 + trainer.dx,
+                        (trainer.y - startRow) * app.cellHeight - app.cellD[0] + trainer.dy)
 
 def drawPokemonCenter(app):
     startRow, startCol = app.cameraPos[0] - 1, app.cameraPos[1] - 1
     drawImage(CMUImage(app.overworldSprites['pokecenter']),
-              (0 - startCol) * 32 - app.cellD[1], (0 - startRow) * 32 - app.cellD[0],
-              width=992, height=704)
+              (0 - startCol) * app.cellWidth - app.cellD[1], (0 - startRow) * app.cellHeight - app.cellD[0],
+              width=convertW(app, 992), height=convertH(app, 704))
     for npc in app.pokecenterNPCs:
         if startRow < npc.y < startRow + 12 and startCol < npc.x < startCol + 17:
-            drawTrainer(npc, (npc.x - startCol) * 32 - app.cellD[1] - 16 + npc.dx,
-                        (npc.y - startRow) * 32 - app.cellD[0] + npc.dy)
+            drawTrainer(app, npc, (npc.x - startCol) * app.cellWidth - app.cellD[1] - app.cellWidth/2 + npc.dx,
+                        (npc.y - startRow) * app.cellHeight - app.cellD[0] + npc.dy)
 
 def drawPokemart(app):
     startRow, startCol = app.cameraPos[0] - 1, app.cameraPos[1] - 1
     drawImage(CMUImage(app.overworldSprites['pokemart']),
-              (0 - startCol) * 32 - app.cellD[1], (0 - startRow) * 32 - app.cellD[0],
-              width=896, height=672)
+              (0 - startCol) * app.cellWidth - app.cellD[1], (0 - startRow) * app.cellHeight - app.cellD[0],
+              width=convertW(app, 896), height=convertH(app, 672))
     for npc in app.pokemartNPCs:
         if startRow < npc.y < startRow + 12 and startCol < npc.x < startCol + 17:
-            drawTrainer(npc, (npc.x - startCol) * 32 - app.cellD[1] - 16 + npc.dx,
-                        (npc.y - startRow) * 32 - app.cellD[0] + npc.dy)
+            drawTrainer(app, npc, (npc.x - startCol) * app.cellWidth - app.cellD[1] - app.cellWidth/2 + npc.dx,
+                        (npc.y - startRow) * app.cellHeight - app.cellD[0] + npc.dy)
 
 def drawConversation(app, trainer):
-    drawMenuBox(app, 0, 228, (4, 30), type=-2)
-    left1 = drawAlphaNum(app, 20, 246, trainer.message1, spacing=11, size=(10, 21),
+    drawMenuBox(app, 0, convertH(app, 228), (4, 30), type=-2)
+    left1 = drawAlphaNum(app, convertW(app, 20), convertH(app, 246), trainer.message1, spacing=11, size=(10, 21),
                  color1=(115, 115, 115), color2=(215, 215, 215))
-    left2 = drawAlphaNum(app, 20, 276, trainer.message2, spacing=11, size=(10, 21),
+    left2 = drawAlphaNum(app, convertW(app, 20), convertH(app, 276), trainer.message2, spacing=11, size=(10, 21),
                  color1=(115, 115, 115), color2=(215, 215, 215))
-    top = 246 if trainer.message2 == '' else 276
+    top = convertH(app, 246) if trainer.message2 == '' else convertH(app, 276)
     left = left1 if trainer.message2 == '' else left2
-    dy = 10 if app.counter % 10 <= 4 else 0
-    drawImage(CMUImage(app.battleSceneSprites['redCursor']), left, top + dy, width=20, height=12)
+    dy = convertH(app, 10) if app.counter % 10 <= 4 else 0
+    drawImage(CMUImage(app.battleSceneSprites['redCursor']), left, top + dy, width=convertW(app, 20), height=convertH(app, 12))
 
-def drawTrainer(trainer, x, y):
+def drawTrainer(app, trainer, x, y):
     # sprite variables that are currently unused (graphics will be added on later)
     trainerSprite = trainer.getSprite()
     if trainer.facing == 'right':
         trainerSprite = trainerSprite.transpose(Image.FLIP_LEFT_RIGHT)
-    drawImage(CMUImage(trainerSprite), x, y, width=28, height=40, align='center')
+    drawImage(CMUImage(trainerSprite), x, y,
+              width=app.cellWidth*0.875, height=app.cellHeight*1.25, align='center')  # w:28, h:40
 
 '-------------- MENU --------------'
 
 def drawMenuBox(app, left, top, size, type=0):
     startLeft = left
     startTop = top
-    drawImage(CMUImage(app.menuSprites['tl'][type]), startLeft, startTop, width=17, height=17)
-    startLeft += 15
+    # w:17, h:17
+    # +=: 15
+    drawImage(CMUImage(app.menuSprites['tl'][type]), startLeft, startTop,
+              width=app.cellWidth*0.53125, height=app.cellHeight*0.53125)
+    startLeft += app.cellWidth*0.46875
     for i in range(size[1]):
-        drawImage(CMUImage(app.menuSprites['tm'][type]), startLeft, startTop, width=17, height=17)
-        startLeft += 15
-    drawImage(CMUImage(app.menuSprites['tr'][type]), startLeft, startTop, width=17, height=17)
+        drawImage(CMUImage(app.menuSprites['tm'][type]), startLeft, startTop,
+                  width=app.cellWidth*0.53125, height=app.cellHeight*0.53125)
+        startLeft += app.cellWidth*0.46875
+    drawImage(CMUImage(app.menuSprites['tr'][type]), startLeft, startTop,
+              width=app.cellWidth*0.53125, height=app.cellHeight*0.53125)
 
     startLeft = left
-    startTop += 15
+    startTop += app.cellHeight*0.46875
     for i in range(size[0]):
-        drawImage(CMUImage(app.menuSprites['ml'][type]), startLeft, startTop, width=17, height=17)
-        startLeft += 15
+        drawImage(CMUImage(app.menuSprites['ml'][type]), startLeft, startTop,
+                  width=app.cellWidth*0.53125, height=app.cellHeight*0.53125)
+        startLeft += app.cellWidth*0.46875
         for i in range(size[1]):
-            drawImage(CMUImage(app.menuSprites['mm'][type]), startLeft, startTop, width=17, height=17)
-            startLeft += 15
-        drawImage(CMUImage(app.menuSprites['mr'][type]), startLeft, startTop, width=17, height=17)
+            drawImage(CMUImage(app.menuSprites['mm'][type]), startLeft, startTop,
+                      width=app.cellWidth*0.53125, height=app.cellHeight*0.53125)
+            startLeft += app.cellWidth*0.46875
+        drawImage(CMUImage(app.menuSprites['mr'][type]), startLeft, startTop,
+                  width=app.cellWidth*0.53125, height=app.cellHeight*0.53125)
         startLeft = left
-        startTop += 15
+        startTop += app.cellHeight*0.46875
 
-    drawImage(CMUImage(app.menuSprites['bl'][type]), startLeft, startTop, width=17, height=17)
-    startLeft += 15
+    drawImage(CMUImage(app.menuSprites['bl'][type]), startLeft, startTop,
+              width=app.cellWidth*0.53125, height=app.cellHeight*0.53125)
+    startLeft += app.cellWidth*0.46875
     for i in range(size[1]):
-        drawImage(CMUImage(app.menuSprites['bm'][type]), startLeft, startTop, width=17, height=17)
-        startLeft += 15
-    drawImage(CMUImage(app.menuSprites['br'][type]), startLeft, startTop, width=17, height=17)
+        drawImage(CMUImage(app.menuSprites['bm'][type]), startLeft, startTop,
+                  width=app.cellWidth*0.53125, height=app.cellHeight*0.53125)
+        startLeft += app.cellWidth*0.46875
+    drawImage(CMUImage(app.menuSprites['br'][type]), startLeft, startTop,
+              width=app.cellWidth*0.53125, height=app.cellHeight*0.53125)
 
 def drawMenu(app):
     if app.menuScreens[app.menuScreenIndex] == 'main':
-        startLeft = 336
+        startLeft = convertW(app, 336)
         startTop = 0
         drawMenuBox(app, startLeft, startTop, (13, 8), type=app.frameType)
 
         # draw labels
-        startLeft = 368
-        drawAlphaNum(app, startLeft, 32, 'POKEMON', spacing=10, size=(12, 18))
-        drawAlphaNum(app, startLeft, 62, 'BAG', spacing=10, size=(12, 18))
-        drawAlphaNum(app, startLeft, 92, app.player.name, spacing=10, size=(12, 18))
-        drawAlphaNum(app, startLeft, 122, 'SAVE', spacing=10, size=(12, 18))
-        drawAlphaNum(app, startLeft, 152, 'OPTIONS', spacing=10, size=(12, 18))
-        drawAlphaNum(app, startLeft, 182, 'EXIT', spacing=10, size=(12, 18))
+        startLeft = convertW(app, 368)
+        drawAlphaNum(app, startLeft, convertH(app, 32), 'POKEMON', spacing=10, size=(12, 18))
+        drawAlphaNum(app, startLeft, convertH(app, 62), 'BAG', spacing=10, size=(12, 18))
+        drawAlphaNum(app, startLeft, convertH(app, 92), app.player.name, spacing=10, size=(12, 18))
+        drawAlphaNum(app, startLeft, convertH(app, 122), 'SAVE', spacing=10, size=(12, 18))
+        drawAlphaNum(app, startLeft, convertH(app, 152), 'OPTIONS', spacing=10, size=(12, 18))
+        drawAlphaNum(app, startLeft, convertH(app, 182), 'EXIT', spacing=10, size=(12, 18))
 
-        drawImage(CMUImage(app.battleSceneSprites['blackCursor']), 352, 32 + 30 * app.menuIndex, width=12, height=12)
+        drawImage(CMUImage(app.battleSceneSprites['blackCursor']),
+                  convertW(app, 352), convertH(app, 32 + 30 * app.menuIndex),
+                  width=convertW(app, 12), height=convertH(app, 12))
 
-        drawMenuBox(app, 0, 228, (4, 30), type=-1)
+        drawMenuBox(app, 0, convertH(app, 228), (4, 30), type=-1)
         if app.menuIndex == 0:
             message1 = 'Check and organize POKEMON that are'
             message2 = 'traveling with you in your party.'
@@ -1102,91 +1124,113 @@ def drawMenu(app):
         else:
             message1 = ''
             message2 = ''
-        drawAlphaNum(app, 6, 244, message1, spacing=11, size=(10, 21),
+        drawAlphaNum(app, convertW(app, 6), convertH(app, 244), message1, spacing=11, size=(10, 21),
                      color1=(248, 248, 248), color2=(115, 115, 115))
-        drawAlphaNum(app, 6, 274, message2, spacing=11, size=(10, 21),
+        drawAlphaNum(app, convertW(app, 6), convertH(app, 274), message2, spacing=11, size=(10, 21),
                      color1=(248, 248, 248), color2=(115, 115, 115))
 
     if app.menuScreens[app.menuScreenIndex] == 'pokemon':
-        drawImage(CMUImage(app.menuSprites['pokemonMenuBackground']), 0, 0, width=480, height=320)
+        drawImage(CMUImage(app.menuSprites['pokemonMenuBackground']), 0, 0,
+                  width=convertW(app, 480), height=convertH(app, 320))
 
         curPokemonBox = app.menuSprites['curPokemonSelectedBox'] if app.pokemonIndex == 0 \
             else app.menuSprites['curPokemonBox']
-        drawImage(CMUImage(curPokemonBox), 6, 36, width=168, height=114)
+        drawImage(CMUImage(curPokemonBox),
+                  convertW(app, 6), convertH(app, 36),
+                  width=convertW(app, 168), height=convertH(app, 114))
 
         curPokemonAnimationSpeed = 5 if app.pokemonIndex == 0 else 1
-        drawImage(CMUImage(app.curPokemon.menuSprite), 5, 65 - (curPokemonAnimationSpeed * (app.counter%4)),
-                  width=68, height=48)
-        drawAlphaNum(app, 75, 75, app.curPokemon.nickName, color1=(248, 248, 248), color2=(112, 112, 112))
-        drawAlphaNum(app, 105, 95, str(app.curPokemon.level), color1=(248, 248, 248), color2=(112, 112, 112))
-        drawAlphaNum(app, 100, 128, f'{app.curPokemon.currentHP}  {app.curPokemon.hp}',
+        drawImage(CMUImage(app.curPokemon.menuSprite),
+                  convertW(app, 5), convertH(app, 65 - (curPokemonAnimationSpeed * (app.counter%4))),
+                  width=convertW(app, 68), height=convertH(app, 48))
+        drawAlphaNum(app, convertW(app, 75), convertH(app, 75),
+                     app.curPokemon.nickName, color1=(248, 248, 248), color2=(112, 112, 112))
+        drawAlphaNum(app, convertW(app, 105), convertH(app, 95),
+                     str(app.curPokemon.level), color1=(248, 248, 248), color2=(112, 112, 112))
+        drawAlphaNum(app, convertW(app, 100), convertH(app, 128),
+                     f'{app.curPokemon.currentHP}  {app.curPokemon.hp}',
                      color1=(248, 248, 248), color2=(112, 112, 112))
-        drawHealthBar(app, 67, 118, app.curPokemon.currentHP, app.curPokemon.hp)
+        drawHealthBar(app, convertW(app, 67), convertH(app, 118),
+                      app.curPokemon.currentHP, app.curPokemon.hp)
 
         for i in range(1, len(app.player.party)):
             pokemonBox = app.menuSprites['pokemonSelectedBox'] if app.pokemonIndex == i \
                 else app.menuSprites['pokemonBox']
-            drawImage(CMUImage(pokemonBox), 175, 18 + ((i-1) * 48), width=300, height=48)
+            drawImage(CMUImage(pokemonBox), convertW(app, 175), convertH(app, 18 + ((i-1) * 48)),
+                      width=convertW(app, 300), height=convertH(app, 48))
             pokemon = app.player.party[i]
             pokemonAnimationSpeed = 5 if app.pokemonIndex == i else 1
-            drawImage(CMUImage(pokemon.menuSprite), 170, 18 + ((i-1) * 48) - (pokemonAnimationSpeed * (app.counter % 4)),
-                      width=68, height=48)
-            drawAlphaNum(app, 235, 28 + ((i-1) * 48), pokemon.nickName, color1=(248, 248, 248), color2=(112, 112, 112))
-            drawAlphaNum(app, 280, 46 + ((i-1) * 48), str(pokemon.level), color1=(248, 248, 248), color2=(112, 112, 112))
-            drawAlphaNum(app, 405, 46 + ((i-1) * 48), f'{pokemon.currentHP}  {pokemon.hp}',
+            drawImage(CMUImage(pokemon.menuSprite), convertW(app, 170),
+                      convertH(app, 18 + ((i-1) * 48) - (pokemonAnimationSpeed * (app.counter % 4))),
+                      width=convertW(app, 68), height=convertH(app, 48))
+            drawAlphaNum(app, convertW(app, 235), convertH(app, 28 + ((i-1) * 48)),
+                         pokemon.nickName, color1=(248, 248, 248), color2=(112, 112, 112))
+            drawAlphaNum(app, convertW(app, 280), convertH(app, 46 + ((i-1) * 48)),
+                         str(pokemon.level), color1=(248, 248, 248), color2=(112, 112, 112))
+            drawAlphaNum(app, convertW(app, 405), convertH(app, 46 + ((i-1) * 48)),
+                         f'{pokemon.currentHP}  {pokemon.hp}',
                          color1=(248, 248, 248), color2=(112, 112, 112))
-            drawHealthBar(app, 367, 36 + ((i-1) * 48), pokemon.currentHP, pokemon.hp)
+            drawHealthBar(app, convertW(app, 367), convertH(app, 36 + ((i-1) * 48)),
+                          pokemon.currentHP, pokemon.hp)
 
         cancelButton = app.menuSprites['cancelSelectedButton'] if app.pokemonIndex == len(app.player.party) \
             else app.menuSprites['cancelButton']
 
-        drawImage(CMUImage(cancelButton), 370, 265, width=108, height=48)
+        drawImage(CMUImage(cancelButton), convertW(app, 370), convertH(app, 265),
+                  width=convertW(app, 108), height=convertH(app, 48))
 
         if app.isPokemonSelected:
-            drawMenuBox(app, 4, 252, (2, 18), type=app.frameType)
-            drawAlphaNum(app, 20, 280, 'Do what with this    ?',
+            drawMenuBox(app, convertW(app, 4), convertH(app, 252), (2, 18), type=app.frameType)
+            drawAlphaNum(app, convertW(app, 20), convertH(app, 280), 'Do what with this    ?',
                          spacing=12, size=(14, 18), color1=(115, 115, 115), color2=(215, 215, 215))
-            drawAlphaNum(app, 230, 276, 'P K',
+            drawAlphaNum(app, convertW(app, 230), convertH(app, 276), 'P K',
                          spacing=10, size=(12, 16), color1=(115, 115, 115), color2=(215, 215, 215))
-            drawAlphaNum(app, 240, 284, 'M N',
+            drawAlphaNum(app, convertW(app, 240), convertH(app, 284), 'M N',
                          spacing=10, size=(12, 16), color1=(115, 115, 115), color2=(215, 215, 215))
 
-            drawMenuBox(app, 304, 192, (6, 10))
-            drawAlphaNum(app, 334, 210, 'SHIFT',
+            drawMenuBox(app, convertW(app, 304), convertH(app, 192), (6, 10))
+            drawAlphaNum(app, convertW(app, 334), convertH(app, 210), 'SHIFT',
                          spacing=12, size=(14, 18), color1=(115, 115, 115), color2=(215, 215, 215))
-            drawAlphaNum(app, 334, 240, 'SUMMARY',
+            drawAlphaNum(app, convertW(app, 334), convertH(app, 240), 'SUMMARY',
                          spacing=12, size=(14, 18), color1=(115, 115, 115), color2=(215, 215, 215))
-            drawAlphaNum(app, 334, 270, 'CANCEL',
+            drawAlphaNum(app, convertW(app, 334), convertH(app, 270), 'CANCEL',
                          spacing=12, size=(14, 18), color1=(115, 115, 115), color2=(215, 215, 215))
 
-            drawImage(CMUImage(app.battleSceneSprites['blackCursor']), 320, 212 + 30 * app.menuIndex, width=12,
-                      height=12)
+            drawImage(CMUImage(app.battleSceneSprites['blackCursor']),
+                      convertW(app, 320), convertH(app, 212 + 30 * app.menuIndex),
+                      width=convertW(app, 12), height=convertH(app, 12))
         else:
-            drawMenuBox(app, 4, 252, (2, 22), type=-2)
-            drawAlphaNum(app, 20, 280, 'Choose POKEMON or CANCEL.',
+            drawMenuBox(app, convertW(app, 4), convertH(app, 252), (2, 22), type=-2)
+            drawAlphaNum(app, convertW(app, 20), convertH(app, 280), 'Choose POKEMON or CANCEL.',
                          spacing=12, size=(14, 18), color1=(115, 115, 115), color2=(215, 215, 215))
 
     if app.menuScreens[app.menuScreenIndex] == 'item':
-        drawImage(CMUImage(app.menuSprites['itemScreen']), 0, 0, width=480, height=320)
-        drawImage(CMUImage(app.menuSprites['itemLabel']), 0, 0, width=158, height=60)
-        drawImage(CMUImage(app.battleSceneSprites['blackCursor']), 180, 30 + 36*app.itemIndex, width=12, height=12)
+        drawImage(CMUImage(app.menuSprites['itemScreen']), 0, 0, width=convertW(app, 480), height=convertH(app, 320))
+        drawImage(CMUImage(app.menuSprites['itemLabel']), 0, 0, width=convertW(app, 158), height=convertH(app, 60))
+        drawImage(CMUImage(app.battleSceneSprites['blackCursor']),
+                  convertW(app, 180), convertH(app, 30 + 36*app.itemIndex), width=convertW(app, 12), height=convertH(app, 12))
 
-        startLeft = 196
-        startTop = 28
+        startLeft = convertW(app, 196)
+        startTop = convertH(app, 28)
         for item in app.player.items:
             drawAlphaNum(app, startLeft, startTop, "%-25s x %+3s" % (item, app.player.items[item]))
-            startTop += 36
+            startTop += convertH(app, 36)
         drawAlphaNum(app, startLeft, startTop, 'CANCEL')
 
     if app.menuScreens[app.menuScreenIndex] == 'player':
-        drawImage(CMUImage(app.menuSprites['trainerCardBackground']), 0, 0, width=480, height=320)
-        drawImage(CMUImage(app.menuSprites['trainerCard']), 12, 12, width=456, height=296)
-        drawImage(CMUImage(app.menuSprites['trainerSprite']), 320, 106, width=80, height=110)
-        drawAlphaNum(app, 60, 80, f'NAME {app.player.name}', spacing=14, size=(16, 18),
+        drawImage(CMUImage(app.menuSprites['trainerCardBackground']), 0, 0, width=convertW(app, 480), height=convertH(app, 320))
+        drawImage(CMUImage(app.menuSprites['trainerCard']),
+                  convertW(app, 12), convertH(app, 12), width=convertW(app, 456), height=convertH(app, 296))
+        drawImage(CMUImage(app.menuSprites['trainerSprite']),
+                  convertW(app, 320), convertH(app, 106), width=convertW(app, 80), height=convertH(app, 110))
+        drawAlphaNum(app, convertW(app, 60), convertH(app, 80),
+                     f'NAME {app.player.name}', spacing=14, size=(16, 18),
                      color1=(96, 96, 96), color2=(208, 208, 200))
-        drawAlphaNum(app, 60, 136, f'MONEY   {app.player.money}', spacing=14, size=(16, 18),
+        drawAlphaNum(app, convertW(app, 60), convertH(app, 136),
+                     f'MONEY   {app.player.money}', spacing=14, size=(16, 18),
                      color1=(96, 96, 96), color2=(208, 208, 200))
-        drawAlphaNum(app, 60, 168, f'POKEMON {len(app.player.party)}', spacing=14, size=(16, 18),
+        drawAlphaNum(app, convertW(app, 60), convertH(app, 168),
+                     f'POKEMON {len(app.player.party)}', spacing=14, size=(16, 18),
                      color1=(96, 96, 96), color2=(208, 208, 200))
 
         hours = f'{int((app.totalGameTime + app.curGameTimer) // 3600)}'
@@ -1194,115 +1238,122 @@ def drawMenu(app):
         minutes = f'{int((app.totalGameTime + app.curGameTimer) // 60 % 60)}'
         minutes = '0' + minutes if len(minutes) == 1 else minutes
 
-        drawAlphaNum(app, 60, 192, f'          .', spacing=14, size=(16, 18),
+        drawAlphaNum(app, convertW(app, 60), convertH(app, 192),
+                     f'          .', spacing=14, size=(16, 18),
                      color1=(96, 96, 96), color2=(208, 208, 200))
-        drawAlphaNum(app, 60, 200, f'TIME    {hours}.{minutes}', spacing=14, size=(16, 18),
+        drawAlphaNum(app, convertW(app, 60), convertH(app, 200),
+                     f'TIME    {hours}.{minutes}', spacing=14, size=(16, 18),
                      color1=(96, 96, 96), color2=(208, 208, 200))
-        drawAlphaNum(app, 60, 242, f'TRAINERS DEFEATED', size=(10, 12),
+        drawAlphaNum(app, convertW(app, 60), convertH(app, 242),
+                     f'TRAINERS DEFEATED', size=(10, 12),
                      color1=(96, 96, 96), color2=(208, 208, 200))
         for i in range(len(app.opponents)):
             if app.opponents[i].defeated:
-                drawImage(CMUImage(app.menuSprites['starSprite']), (i*47) + 67, 257, width=26, height=26)
+                drawImage(CMUImage(app.menuSprites['starSprite']),
+                          convertW(app, (i*47) + 67), convertH(app, 257),
+                          width=convertW(app, 26), height=convertH(app, 26))
 
     if app.menuScreens[app.menuScreenIndex] == 'option':
-        drawRect(0, 0, 480, 320)
-        drawMenuBox(app, 0, 4, (0, 30), type=-1)
-        drawMenuBox(app, 16, 40, (2, 28), type=-2)
-        drawAlphaNum(app, 56, 64, f'OPTION', spacing=12, size=(16, 18),
+        drawRect(0, 0, convertW(app, 480), convertH(app, 320))
+        drawMenuBox(app, 0, convertH(app, 4), (0, 30), type=-1)
+        drawMenuBox(app, convertW(app, 16), convertH(app, 40), (2, 28), type=-2)
+        drawAlphaNum(app, convertW(app, 56), convertH(app, 64),
+                     f'OPTION', spacing=12, size=(16, 18),
                      color1=(96, 96, 96), color2=(208, 208, 200))
-        drawMenuBox(app, 16, 108, (12, 28), type=app.frameType)
-        drawRect(32, 124, 418, 178, opacity=10)
-        drawRect(32, 128, 418, 38, fill='white')
-        drawAlphaNum(app, 56, 140, f'FRAME', spacing=12, size=(16, 18),
+        drawMenuBox(app, convertW(app, 16), convertH(app, 108), (12, 28), type=app.frameType)
+        drawRect(convertW(app, 32), convertH(app, 124), convertW(app, 418), convertH(app, 178), opacity=10)
+        drawRect(convertW(app, 32), convertH(app, 128), convertW(app, 418), convertH(app, 38), fill='white')
+        drawAlphaNum(app, convertW(app, 56), convertH(app, 140),
+                     f'FRAME', spacing=12, size=(16, 18),
                      color1=(96, 96, 96), color2=(208, 208, 200))
-        drawAlphaNum(app, 256, 140, f'TYPE {app.frameType + 1}', spacing=12, size=(16, 18),
+        drawAlphaNum(app, convertW(app, 256), convertH(app, 140),
+                     f'TYPE {app.frameType + 1}', spacing=12, size=(16, 18),
                      color1=(248, 128, 80), color2=(248, 48, 0))
 
 def drawItemShopMenu(app):
     drawConversation(app, app.pokemartNPCs[0])
-    drawMenuBox(app, 16, 8, (6, 6), type=-2)
-    drawAlphaNum(app, 44, 32, 'MONEY', spacing=10, size=(12, 18),
+    drawMenuBox(app, convertW(app, 16), convertH(app, 8), (6, 6), type=-2)
+    drawAlphaNum(app, convertW(app, 44), convertH(app, 32), 'MONEY', spacing=10, size=(12, 18),
                  color1=(115, 115, 115), color2=(215, 215, 215))
-    drawAlphaNum(app, 44, 62, f'{app.player.money}', spacing=10, size=(12, 18),
+    drawAlphaNum(app, convertW(app, 44), convertH(app, 62), f'{app.player.money}', spacing=10, size=(12, 18),
                  color1=(115, 115, 115), color2=(215, 215, 215))
 
-    drawMenuBox(app, 192, 8, (6, 17), type=-2)
-    startLeft = 220
-    drawAlphaNum(app, startLeft, 32, 'BUY POTION --------- 300', spacing=10, size=(12, 18),
+    drawMenuBox(app, convertW(app, 192), convertH(app, 8), (6, 17), type=-2)
+    startLeft = convertW(app, 220)
+    drawAlphaNum(app, startLeft, convertH(app, 32), 'BUY POTION --------- 300', spacing=10, size=(12, 18),
                  color1=(115, 115, 115), color2=(215, 215, 215))
-    drawAlphaNum(app, startLeft, 62, 'BUY POKEBALL ------- 200', spacing=10, size=(12, 18),
+    drawAlphaNum(app, startLeft, convertH(app, 62), 'BUY POKEBALL ------- 200', spacing=10, size=(12, 18),
                  color1=(115, 115, 115), color2=(215, 215, 215))
-    drawAlphaNum(app, startLeft, 92, 'SEE YA!', spacing=10, size=(12, 18),
+    drawAlphaNum(app, startLeft, convertH(app, 92), 'SEE YA!', spacing=10, size=(12, 18),
                  color1=(115, 115, 115), color2=(215, 215, 215))
-    drawImage(CMUImage(app.battleSceneSprites['blackCursor']), startLeft - 16, 32 + 30 * app.menuIndex,
-              width=12, height=12)
+    drawImage(CMUImage(app.battleSceneSprites['blackCursor']),
+              startLeft - convertW(app, 16), convertH(app, 32 + 30 * app.menuIndex),
+              width=convertW(app, 12), height=convertH(app, 12))
 
 def drawLossMenu(app):
-    drawRect(0, 0, 480, 320, opacity=50)
-    drawMenuBox(app, 64, 56, (12, 22), type=0)
-    drawAlphaNum(app, 210, 76, 'DEFEAT', spacing=14, size=(16, 20),
+    drawRect(0, 0, convertW(app, 480), convertH(app, 320), opacity=50)
+    drawMenuBox(app, convertW(app, 64), convertH(app, 56), (12, 22), type=0)
+    drawAlphaNum(app, convertW(app, 210), convertH(app, 76), 'DEFEAT', spacing=14, size=(16, 20),
                  color1=(255, 16, 16), color2=(208, 208, 200))
-    drawAlphaNum(app, 84, 106, f'{app.player.name} ran out of usable Pokemon!',
+    drawAlphaNum(app, convertW(app, 84), convertH(app, 106), f'{app.player.name} ran out of usable Pokemon!',
                  color1=(96, 96, 96), color2=(208, 208, 200))
-    drawAlphaNum(app, 84, 136, f'Please restart game to continue from',
+    drawAlphaNum(app, convertW(app, 84), convertH(app, 136), f'Please restart game to continue from',
                  color1=(96, 96, 96), color2=(208, 208, 200))
-    drawAlphaNum(app, 84, 156, f'a previous save.',
+    drawAlphaNum(app, convertW(app, 84), convertH(app, 156), f'a previous save.',
                  color1=(96, 96, 96), color2=(208, 208, 200))
 
 def drawMainMenu(app):
-    drawRect(0, 0, 480, 320, fill=rgb(79, 83, 143))
-    drawMenuBox(app, 80, 16, (3, 19), type=0)
-    drawAlphaNum(app, 112, 46, 'LOAD', spacing=10, size=(14, 16),
+    drawRect(0, 0, app.width, app.height, fill=rgb(79, 83, 143))  # x:0, y:0, w:480, h:320
+    drawMenuBox(app, app.width*1/6, app.height*0.05, (3, 19), type=0)  # x:80, y:16
+    drawAlphaNum(app, app.width*7/30, app.height*0.13375, 'LOAD', spacing=10, size=(14, 16),  # x: 112, y:46
                  color1=(99, 99, 99), color2=(214, 214, 206))
-    drawMenuBox(app, 80, 106, (3, 19), type=0)
-    drawAlphaNum(app, 112, 136, 'NEW GAME', spacing=10, size=(14, 16),
+    drawMenuBox(app, app.width*1/6, app.height*0.33125, (3, 19), type=0)  # x:80, y:106
+    drawAlphaNum(app, app.width*7/30, app.height*0.425, 'NEW GAME', spacing=10, size=(14, 16),  # x:112, y:136
                  color1=(99, 99, 99), color2=(214, 214, 206))
 
-    drawRect(84, 20, 309, 69, opacity=30, visible=app.mainMenuBox1Visible)
-    drawRect(84, 110, 309, 69, opacity=30, visible=app.mainMenuBox2Visible)
+    drawRect(app.width*0.175, app.height*0.0635, app.width*0.64375, app.height*0.215625,  # x:84, y:20, w:309, h:69
+             opacity=30, visible=app.mainMenuBox1Visible)
+    drawRect(app.width*0.175, app.height*0.34375, app.width*0.64375, app.height*0.215625,  # x:84, y:110, w:309, h:69
+             opacity=30, visible=app.mainMenuBox2Visible)
 
-    drawMenuBox(app, 48, 190, (7, 23), type=-1)
-    drawAlphaNum(app, 68, 204, 'CONTROLS', spacing=10, size=(10, 16),
-                 color1=(248, 248, 248), color2=(115, 115, 115))
-    drawAlphaNum(app, 68, 229, 'WASD to move', spacing=10, size=(10, 16),
-                 color1=(248, 248, 248), color2=(115, 115, 115))
-    drawAlphaNum(app, 68, 254, 'ENTER to enter menu', spacing=10, size=(10, 16),
-                 color1=(248, 248, 248), color2=(115, 115, 115))
-    drawAlphaNum(app, 68, 279, 'L to interact', spacing=10, size=(10, 16),
-                 color1=(248, 248, 248), color2=(115, 115, 115))
-    drawAlphaNum(app, 68, 304, 'K to go back', spacing=10, size=(10, 16),
-                 color1=(248, 248, 248), color2=(115, 115, 115))
+    drawMenuBox(app, app.width*0.1, app.height*0.59375, (7, 23), type=-1)  # x:48, y:190
+    messages = ['CONTROLS', 'WASD to move', 'ENTER to enter menu', 'L to interact', 'K to go back']
+    for i in range(len(messages)):
+        drawAlphaNum(app, app.width*17/120, app.height*0.6375 + i*app.height*0.078125,  # x:68, y:204+25i
+                     messages[i], spacing=10, size=(10, 16), color1=(248, 248, 248), color2=(115, 115, 115))
 
 '------------- BATTLE -------------'
 
 def drawPokemonHealthBox(app):
     # opponent pokemon
-    drawImage(CMUImage(app.battleSceneSprites['oppHealthBox']), 28, 34, width=200, height=58)
-    left = 107
-    top = 68
+    drawImage(CMUImage(app.battleSceneSprites['oppHealthBox']),
+              convertW(app, 28), convertH(app, 34), width=convertW(app, 200), height=convertH(app, 58))
+    left = convertW(app, 107)
+    top = convertH(app, 68)
     drawHealthBar(app, left, top, app.oppPokemon.currentHP, app.oppPokemon.hp)
-    left = 42
-    top = 44
+    left = convertW(app, 42)
+    top = convertH(app, 44)
     drawAlphaNum(app, left, top, app.oppPokemon.nickName)
-    left = 190
-    top = 42
+    left = convertW(app, 190)
+    top = convertH(app, 42)
     drawAlphaNum(app, left, top, str(app.oppPokemon.level))
     # player pokemon
-    drawImage(CMUImage(app.battleSceneSprites['playerHealthBox']), 254, 150, width=208, height=74)
-    left = 350
-    top = 184
+    drawImage(CMUImage(app.battleSceneSprites['playerHealthBox']),
+              convertW(app, 254), convertH(app, 150), width=convertW(app, 208), height=convertH(app, 74))
+    left = convertW(app, 350)
+    top = convertH(app, 184)
     drawHealthBar(app, left, top, app.curPokemon.currentHP, app.curPokemon.hp)
-    left = 286
-    top = 160
+    left = convertW(app, 286)
+    top = convertH(app, 160)
     drawAlphaNum(app, left, top, app.curPokemon.nickName)
-    left = 434
-    top = 158
+    left = convertW(app, 434)
+    top = convertH(app, 158)
     drawAlphaNum(app, left, top, str(app.curPokemon.level))
-    left = 384
-    top = 196
+    left = convertW(app, 384)
+    top = convertH(app, 196)
     drawAlphaNum(app, left, top, f'{app.curPokemon.currentHP}/ {app.curPokemon.hp}')
-    left = 318
-    top = 216
+    left = convertW(app, 318)
+    top = convertH(app, 216)
     drawExpBar(app, left, top, app.curPokemon)
 
 def drawHealthBar(app, left, top, currentHP, hp, size=48):
@@ -1317,7 +1368,8 @@ def drawHealthBar(app, left, top, currentHP, hp, size=48):
     healthWidth = int(healthBarWidth * healthPercent)
 
     if healthWidth > 0:
-        drawImage(CMUImage(app.battleSceneSprites[healthColor]), left, top, width=healthWidth*2, height=6)
+        drawImage(CMUImage(app.battleSceneSprites[healthColor]), left, top,
+                  width=convertW(app, healthWidth*2), height=convertH(app, 6))
 
 def drawExpBar(app, left, top, pokemon):
     currentExp = pokemon.experience - pokemon.level ** 3
@@ -1327,28 +1379,33 @@ def drawExpBar(app, left, top, pokemon):
     expWidth = int(expBarWidth * expPercent)
 
     if expWidth > 0:
-        drawImage(CMUImage(app.battleSceneSprites['expBar']), left, top, width=expWidth, height=4)
+        drawImage(CMUImage(app.battleSceneSprites['expBar']), left, top,
+                  width=convertW(app, expWidth), height=convertH(app, 4))
 
 def drawPokemon(app):
-    drawImage(CMUImage(app.curPokemon.backSprite), 82, 132, width=128, height=128)
-    drawImage(CMUImage(app.oppPokemon.frontSprite), 290, 46, width=128, height=128)
+    drawImage(CMUImage(app.curPokemon.backSprite), convertW(app, 82), convertH(app, 132),
+              width=convertW(app, 128), height=convertH(app, 128))
+    drawImage(CMUImage(app.oppPokemon.frontSprite), convertW(app, 290), convertH(app, 46),
+              width=convertW(app, 128), height=convertH(app, 128))
 
 def drawMoveBox(app):
-    drawImage(CMUImage(app.battleSceneSprites['moveBox']), 0, 224, width=480, height=96)
-    startLeft = 42
-    startTop = 254
+    drawImage(CMUImage(app.battleSceneSprites['moveBox']), 0, convertH(app, 224),
+              width=convertW(app, 480), height=convertH(app, 96))
+    startLeft = convertW(app, 42)
+    startTop = convertH(app, 254)
     for i in range(4):
         if i >= len(app.curPokemon.moves):
             move = '--'
         else:
             move = app.curPokemon.moves[i]
         drawAlphaNum(app, startLeft, startTop, move, color1=(72, 72, 72), color2=(208, 208, 200))
-        startLeft += 145
+        startLeft += convertH(app, 145)
         if i == 1:
-            startTop += 30
-            startLeft = 42
+            startTop += convertH(app, 30)
+            startLeft = convertW(app, 42)
     cursorX, cursorY = app.moveCursorPos[app.moveIndex[1]][app.moveIndex[0]]
-    drawImage(CMUImage(app.battleSceneSprites['blackCursor']), cursorX, cursorY, width=12, height=20)
+    drawImage(CMUImage(app.battleSceneSprites['blackCursor']), convertW(app, cursorX), convertH(app, cursorY),
+              width=convertW(app, 12), height=convertH(app, 20))
 
     moveI = app.moveIndex[0] * 2 ** 0 + app.moveIndex[1] * 2 ** 1
     if moveI >= len(app.curPokemon.moves):
@@ -1360,26 +1417,43 @@ def drawMoveBox(app):
         maxPP = app.curPokemon.maxMovePP[moveI]
         type = app.curPokemon.moveTypes[moveI].upper()
 
-    drawAlphaNum(app, 410, 246, str(currentPP), color1=(72, 72, 72), color2=(208, 208, 200))
-    drawAlphaNum(app, 440, 246, str(maxPP), color1=(72, 72, 72), color2=(208, 208, 200))
-    drawAlphaNum(app, 410, 286, type, color1=(72, 72, 72), color2=(208, 208, 200))
+    drawAlphaNum(app, convertW(app, 410), convertH(app, 246), str(currentPP), color1=(72, 72, 72), color2=(208, 208, 200))
+    drawAlphaNum(app, convertW(app, 440), convertH(app, 246), str(maxPP), color1=(72, 72, 72), color2=(208, 208, 200))
+    drawAlphaNum(app, convertW(app, 410), convertH(app, 286), type, color1=(72, 72, 72), color2=(208, 208, 200))
 
 def drawActionBox(app):
-    drawImage(CMUImage(app.battleSceneSprites['actionBox']), 242, 226, width=240, height=96)
+    drawImage(CMUImage(app.battleSceneSprites['actionBox']), convertW(app, 242), convertH(app, 226),
+              width=convertW(app, 240), height=convertH(app, 96))
     cursorX, cursorY = app.actionCursorPos[app.actionIndex[1]][app.actionIndex[0]]
-    drawImage(CMUImage(app.battleSceneSprites['blackCursor']), cursorX, cursorY, width=12, height=20)
+    drawImage(CMUImage(app.battleSceneSprites['blackCursor']), convertW(app, cursorX), convertH(app, cursorY),
+              width=convertW(app, 12), height=convertH(app, 20))
 
 def drawBattleBoxMsg(app):
-    startLeft = 22
-    startTop = 252
+    startLeft = convertW(app, 22)
+    startTop = convertH(app, 252)
     for line in app.battleBoxMsg:
         drawAlphaNum(app, startLeft, startTop, line, spacing=10, size=(12, 18),
                      color1=(248, 248, 248), color2=(104, 88, 112))
-        startTop += 34
+        startTop += convertH(app, 34)
 
 '--------------------------- OTHER FUNCTIONS ----------------------------'
 
 def updateScene(app):
+    app.cellWidth = app.width * 0.1 * (2 / 3)  # w:32
+    app.cellHeight = app.height * 0.1  # h:32
+
+    if app.cellWidth % 1 != 0:
+        app.cellWidth = rounded(app.cellWidth)
+    if app.cellHeight % 1 != 0:
+        app.cellHeight = rounded(app.cellHeight)
+
+    if app.mainMenu or app.player.defeated:
+        return
+
+    app.counter += 1
+
+    if not app.player.isMoving:
+        app.cellD = [app.cellHeight, app.cellWidth]
     app.curGameTimer = (time.time() - app.t0)
 
     counter = 0
@@ -1402,13 +1476,15 @@ def updateScene(app):
     if app.scene in (0, 3, 4):
         app.cellD[0] += app.cameraPosD[0]
         app.cellD[1] += app.cameraPosD[1]
-        if app.cellD[0] in (0, 64) or app.cellD[1] in (0, 64):
-            app.cameraPos[0] += 1 if app.cellD[0] == 64 else 0
+        if (app.cellD[0] <= 0 or app.cellD[0] >= app.cellHeight * 2 or
+                app.cellD[1] <= 0 or app.cellD[1] >= app.cellWidth * 2):
+            # if app.cellD[0] in (0, app.cellHeight*2) or app.cellD[1] in (0, app.cellWidth*2):
+            app.cameraPos[0] += 1 if app.cellD[0] == app.cellHeight*2 else 0
             app.cameraPos[0] += -1 if app.cellD[0] == 0 else 0
-            app.cameraPos[1] += 1 if app.cellD[1] == 64 else 0
+            app.cameraPos[1] += 1 if app.cellD[1] == app.cellWidth*2 else 0
             app.cameraPos[1] += -1 if app.cellD[1] == 0 else 0
-            app.cellD = [32, 32]
             app.cameraPosD = [0, 0]
+            app.cellD = [app.cellHeight, app.cellWidth]
             app.playerPos = [app.cameraPos[0] + 5, app.cameraPos[1] + 7]
             app.player.isMoving = False
 
@@ -1418,35 +1494,38 @@ def updateScene(app):
         for trainer in app.opponents:
             if trainer.move:
                 if trainer.facing == 'left':
-                    if trainer.x - (abs(trainer.dx) // 16) == app.playerPos[1] - 1:
+                    if trainer.x - (abs(trainer.dx) // (app.cellWidth/2)) == app.playerPos[1] - 1:
                         trainer.move = False
                         trainer.isMoving = False
                         app.pause = False
                         app.scene = 2
                         app.menuScreenIndex = 5
-                        trainer.x -= (abs(trainer.dx) // 32)
+                        trainer.x -= (abs(trainer.dx) // app.cellWidth)
                         trainer.dx = 0
                     else:
-                        trainer.dx -= 4
+                        trainer.dx -= convertW(app, 4)
                 if trainer.facing == 'right':
-                    if trainer.x + (abs(trainer.dx) // 16) == app.playerPos[1] + 1:
+                    if trainer.x + (abs(trainer.dx) // (app.cellWidth/2)) == app.playerPos[1] + 1:
                         trainer.move = False
                         trainer.isMoving = False
                         app.pause = False
                         app.scene = 2
                         app.menuScreenIndex = 5
-                        trainer.x += (abs(trainer.dx) // 32)
+                        trainer.x += (abs(trainer.dx) // app.cellWidth)
                         trainer.dx = 0
                     else:
-                        trainer.dx += 4
+                        trainer.dx += convertW(app, 4)
     if app.scene == 1:  # if the player is in a battle
         app.battleBoxMsg = [f'What will', f'{app.curPokemon.nickName} do?']
 
 def onStep(app):
-    if app.mainMenu or app.player.defeated:
-        return
-    app.counter += 1
     updateScene(app)
+
+def convertW(app, num):
+    return app.width * (num / 480)
+
+def convertH(app, num):
+    return app.height * (num / 320)
 
 '------------ OVERWORLD -----------'
 
@@ -1469,7 +1548,7 @@ def playerCanMove(app, move, grid):
     return True
 
 def saveGame(app):
-    with open(os.path.join(pathlib.Path(__file__).parent, 'data/save.txt'), 'w') as fileout:
+    with open(os.path.join(pathlib.Path(__file__).parent, 'save.txt'), 'w') as fileout:
         if app.curGrid is app.mapGrid:
             scene = 0
         elif app.curGrid is app.pokecenterGrid:
@@ -1493,7 +1572,7 @@ def saveGame(app):
         for item in app.player.items:
             fileout.write(f'{item},{app.player.items[item]}\n')
         for trainer in app.opponents:
-            fileout.write(f'{trainer.name},{trainer.money},{int(trainer.defeated)},{trainer.x},{trainer.y},'
+            fileout.write(f'{trainer.name},{trainer.money},{int(trainer.defeated)},{int(trainer.x)},{int(trainer.y)},'
                           f'{len(trainer.party)},{len(trainer.items)}\n')
             for pokemon in trainer.party:
                 fileout.write(f'{pokemon.name},{pokemon.nickName},{pokemon.level}\n')
